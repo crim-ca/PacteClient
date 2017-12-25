@@ -1,5 +1,6 @@
 package ca.crim.nlp.pacte.client;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,28 +22,49 @@ public class Corpus {
 	}
 
 	/**
-	 * Save a corpus' documents, groups and annotations to disk. Will not retain
-	 * credentials.
+	 * Save a corpus' documents, groups and annotations to disk in subfolders. Will
+	 * not retain user rights. For large corpus, please use the batch functionality
+	 * of the back-end.
 	 * 
 	 * @param tsCorpusId
+	 *            Corpus unique id to export.
 	 * @param tsOuputPath
+	 *            The local directory to store the exported corpus.
 	 * @param tsExportGroupId
-	 *            : Ids of group to export. If none listed, all groups are exported.
+	 *            : Ids of accessible groups to export. If none listed, all
+	 *            accessible groups are exported.
 	 * @return True if exported with success, false if error during export.
 	 */
-	public boolean exportToDisk(String tsCorpusId, String tsOuputPath, List<String> tasExportGroupId) {
+	public boolean exportToDisk(String tsCorpusId, String tsOutputPath, List<String> tasExportGroupId) {
 		String lsReturn = "";
 		Map<String, String> lasBuckets = new HashMap<String, String>();
+		File loDocsFolder = null;
+		File loGroupsFolder = null;
 
-		// Structure du corpus (sauvegarder les groupes et leur id)
+		// Prepare the subfolders
+		if (!(new File(tsOutputPath)).exists())
+			return false;
+		loDocsFolder = new File(tsOutputPath, "documents");
+		loDocsFolder.mkdirs();
+		loGroupsFolder = new File(tsOutputPath, "groups");
+		loGroupsFolder.mkdirs();
+
+		// Download the corpus structure and replicate it
 		lsReturn = poCfg.getRequest(poCfg.getPacteBackend() + "RACSProxy/corpora/" + tsCorpusId + "/structure",
 				USERTYPE.CustomUser, null);
 		if (lsReturn != null && !lsReturn.isEmpty()) {
 			JSONObject loRet = new JSONObject(lsReturn);
-			System.out.println(loRet.get("id"));
+			for (int lniCpt = 0; lniCpt < loRet.getJSONArray("buckets").length(); lniCpt++) {
+				String lsId = ((JSONObject) loRet.getJSONArray("buckets").get(lniCpt)).getString("id");
+
+				if ((tasExportGroupId == null) || tasExportGroupId.isEmpty() || tasExportGroupId.contains(lsId)) {
+					lasBuckets.put(lsId, loRet.getJSONArray("buckets").get(lniCpt).toString());
+					new File(loGroupsFolder, lsId).mkdirs();
+				}
+			}
 		}
 
-		// Check if groups are in the structure, if not, exit.
+		// Check if all required groups are in the structure, if not, exit.
 		if (tasExportGroupId != null && !tasExportGroupId.isEmpty())
 			for (String lsId : tasExportGroupId)
 				if (!lasBuckets.keySet().contains(lsId)) {
@@ -50,9 +72,9 @@ public class Corpus {
 					return false;
 				}
 
-		// List documents
+		// List documents and download them
 
-		// List annotation per group
+		// List annotations per group and store them
 
 		return false;
 	}

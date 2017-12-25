@@ -4,15 +4,20 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import ca.crim.nlp.pacte.QuickConfig;
 
 public class CorpusTest {
-	private String psPacteURL = "https://patx-pacte.crim.ca";
-	private boolean pbVerbose = false;
+	@Rule
+	public TemporaryFolder poTestFolder = new TemporaryFolder();
 
 	@Test
 	/**
@@ -25,8 +30,7 @@ public class CorpusTest {
 		String lsDociID = null;
 		String lsGroupID = null;
 
-		QuickConfig loCfg = new QuickConfig(psPacteURL, "", "", "", "", "test@test.com", "secret", pbVerbose, 2);
-		Corpus loCorpus = new Corpus(loCfg);
+		Corpus loCorpus = new Corpus(new QuickConfig());
 
 		// Create the corpus
 		System.out.print("Creating new corpus... ");
@@ -68,6 +72,23 @@ public class CorpusTest {
 
 	@Test
 	public void exportCorpus() {
+		String lsCorpusId = null;
+		File loExportPath = new File(poTestFolder.toString(), UUID.randomUUID().toString());
+		List<String> lasGroupList = new ArrayList<String>();
+
+		Corpus loCorpus = new Corpus(new QuickConfig());
+
+		lsCorpusId = SampleBuilder.smallCorpus(loCorpus);
+
+		System.out.println(loExportPath.getAbsolutePath().toString());
+		loExportPath.mkdirs();
+		loCorpus.exportToDisk(lsCorpusId, loExportPath.toString(), lasGroupList);
+
+		// Stuff exported?
+		assertTrue(loExportPath.list().length > 0);
 		
+		// Only two groups?
+		
+		// All documents exported?
 	}
 }

@@ -96,7 +96,7 @@ public class Admin {
 		lsId = checkUser(poCfg.getUserCredential(USERTYPE.CustomUser).getUsername(),
 				poCfg.getUserCredential(USERTYPE.CustomUser).getPassword());
 		
-		return lsId == null;
+		return (lsId == null);
 	}
 
 	/**

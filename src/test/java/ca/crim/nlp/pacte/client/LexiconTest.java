@@ -17,12 +17,9 @@ public class LexiconTest {
         String lsIdConcept = null;
         String lsIdTerm = null;
 
-        // FIXME: Aller chercher les accès dans un fichier de config système?
+        Lexicon loLex = new Lexicon(new QuickConfig());
 
-        QuickConfig loCfg = new QuickConfig("https://qa-pacte.crim.ca", "", "", "", "", "test@test.test", "test", true, 2);
-        Lexicon loLex = new Lexicon(loCfg);
-
-        lsIdLexique = loLex.createLexicon("Termium 2016b - " + System.currentTimeMillis());
+        lsIdLexique = loLex.createLexicon("Test lexicon - " + System.currentTimeMillis());
         assertNotEquals("", lsIdLexique);
 
         // ajouter un domaine

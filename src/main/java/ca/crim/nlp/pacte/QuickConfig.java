@@ -1,6 +1,7 @@
 package ca.crim.nlp.pacte;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -10,6 +11,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.client.ClientProtocolException;
@@ -40,6 +42,34 @@ public class QuickConfig {
 	// Creating an instance of HttpClient.
 	CloseableHttpClient httpclient = HttpClients.createDefault();
 
+	public QuickConfig() {
+		String[] lasConfig = readConfiguration();
+		setConfig(lasConfig[0], lasConfig[1], lasConfig[2], lasConfig[3], lasConfig[4], lasConfig[5], lasConfig[6],
+				Boolean.parseBoolean(lasConfig[7]), Integer.parseInt(lasConfig[8]));
+	}
+
+	private void setConfig(String tsBasePacteUrl, String tsAdminPSCUsername, String tsAdminPSCPassword,
+			String tsAdminPacteUsername, String tsAdminPactePassword, String tsCustomUser, String tsCustomPassword,
+			boolean tbVerbose, int tniTokenRenewDelay) {
+		psBaseURLAuthen = tsBasePacteUrl.endsWith("/") ? tsBasePacteUrl : tsBasePacteUrl + "/";
+		psBaseURLPacteBE = psBaseURLAuthen + "pacte-backend/";
+		pniTokenRenewDelay = tniTokenRenewDelay;
+		pbVerbose = tbVerbose;
+
+		// PSC admin
+		if (tsAdminPSCUsername != null && tsAdminPSCPassword != null)
+			poCred.put(USERTYPE.PSCAdmin, new Credential(tsAdminPSCUsername, tsAdminPSCPassword, pniTokenRenewDelay));
+
+		// Pacte admin
+		if (tsAdminPacteUsername != null && tsAdminPactePassword != null)
+			poCred.put(USERTYPE.PacteAdmin,
+					new Credential(tsAdminPacteUsername, tsAdminPactePassword, pniTokenRenewDelay));
+
+		// Pacte custom user
+		if (tsCustomUser != null && tsCustomPassword != null)
+			poCred.put(USERTYPE.CustomUser, new Credential(tsCustomUser, tsCustomPassword, pniTokenRenewDelay));
+	}
+
 	/**
 	 * New configuration with admin and user level credentials
 	 * 
@@ -55,20 +85,11 @@ public class QuickConfig {
 	public QuickConfig(String tsBasePacteUrl, String tsAdminPSCUsername, String tsAdminPSCPassword,
 			String tsAdminPacteUsername, String tsAdminPactePassword, String tsCustomUser, String tsCustomPassword,
 			boolean tbVerbose, int tniTokenRenewDelay) {
-		psBaseURLAuthen = tsBasePacteUrl.endsWith("/") ? tsBasePacteUrl : tsBasePacteUrl + "/";
-		psBaseURLPacteBE = psBaseURLAuthen + "pacte-backend/";
-		pniTokenRenewDelay = tniTokenRenewDelay;
+		if (tsBasePacteUrl == null || tsBasePacteUrl.isEmpty())
+			throw new IllegalArgumentException("PACTE url should not be null");
 
-		// PSC admin
-		poCred.put(USERTYPE.PSCAdmin, new Credential(tsAdminPSCUsername, tsAdminPSCPassword, pniTokenRenewDelay));
-
-		// Pacte admin
-		poCred.put(USERTYPE.PacteAdmin, new Credential(tsAdminPacteUsername, tsAdminPactePassword, pniTokenRenewDelay));
-
-		// Pacte custome user
-		poCred.put(USERTYPE.CustomUser, new Credential(tsCustomUser, tsCustomPassword, pniTokenRenewDelay));
-
-		pbVerbose = tbVerbose;
+		setConfig(tsBasePacteUrl, tsAdminPSCUsername, tsAdminPSCPassword, tsAdminPacteUsername, tsAdminPactePassword,
+				tsCustomUser, tsCustomPassword, tbVerbose, tniTokenRenewDelay);
 	}
 
 	/**
@@ -91,14 +112,8 @@ public class QuickConfig {
 		if (tsCustomUser == null || tsCustomUser.isEmpty())
 			throw new IllegalArgumentException("Username should not be null");
 
-		psBaseURLAuthen = tsBasePacteUrl.endsWith("/") ? tsBasePacteUrl : tsBasePacteUrl + "/";
-		psBaseURLPacteBE = psBaseURLAuthen + "pacte-backend/";
-		pniTokenRenewDelay = tniTokenRenewDelay;
-
-		// Pacte custome user
-		poCred.put(USERTYPE.CustomUser, new Credential(tsCustomUser, tsCustomPassword, pniTokenRenewDelay));
-
-		pbVerbose = tbVerbose;
+		setConfig(tsBasePacteUrl, null, null, null, null, tsCustomUser, tsCustomPassword, tbVerbose,
+				tniTokenRenewDelay);
 	}
 
 	public void setCustomUser(String tsUsername, String tsPassword) {
@@ -343,6 +358,45 @@ public class QuickConfig {
 		}
 
 		return result.toString();
+	}
+
+	/**
+	 * 
+	 */
+	private String[] readConfiguration() {
+		Properties prop = new Properties();
+		InputStream input = null;
+		String[] lasConfig = new String[9];
+
+		try {
+			input = new FileInputStream("config.properties");
+
+			// load a properties file
+			prop.load(input);
+
+			// get the property value and print it out
+			lasConfig[0] = prop.getProperty("server");
+			lasConfig[1] = prop.getProperty("PSCAdmin");
+			lasConfig[2] = prop.getProperty("PSCAdminUser");
+			lasConfig[3] = prop.getProperty("PACTEAdmin");
+			lasConfig[4] = prop.getProperty("PACTEAdminUser");
+			lasConfig[5] = prop.getProperty("StandardUser");
+			lasConfig[6] = prop.getProperty("StandardUserPwd");
+			lasConfig[7] = prop.getProperty("Verbose");
+			lasConfig[8] = prop.getProperty("TokenRenewDelay");
+
+		} catch (IOException ex) {
+			
+		} finally {
+			if (input != null) {
+				try {
+					input.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		return lasConfig;
 	}
 
 	public class Credential {
