@@ -1,31 +1,36 @@
 package ca.crim.nlp.pacte.client;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.UUID;
 
+import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.crim.nlp.pacte.QuickConfig;
 
 public class AdminTest {
-	private String psPacteUrl = "https://patx-pacte.crim.ca";
 
-	@Test
+	@Ignore
+	// FIXME : when deleting a user is available on the rest api
 	public void testCreateDeleteUser() {
-		String lsUsername = "user1@test.com";
+		String lsUsername = "user-" + UUID.randomUUID().toString() + "@test.com";
 		String lsPwd = UUID.randomUUID().toString();
 		String lsPrenom = "User";
-		String lsNom = "One";
+		String lsNom = "Test";
 		String lsUserId = null;
 
-		QuickConfig loCfg = new QuickConfig(psPacteUrl, "", "", "test@test.com", "secret", lsUsername, lsPwd, false, 1);
+		QuickConfig loCfg = new QuickConfig();
+		loCfg.setCustomUser(lsUsername, lsPwd);
 		Admin loAdmin = new Admin(loCfg);
 		lsUserId = loAdmin.createUser(lsUsername, lsPwd, lsPrenom, lsNom);
 
 		assertNotNull(lsUserId);
+		assertEquals(36, lsUserId.length());
 		assertNotNull(loAdmin.checkUser(lsUsername, lsPwd));
 
 		loCfg.setCustomUser(lsUsername, lsPwd);
@@ -33,6 +38,26 @@ public class AdminTest {
 		assertNull(loAdmin.checkUser(lsUsername, lsPwd));
 	}
 
+	@Before
+	public void checkCreateUsers() {
+		String lsId1 = null;
+		String lsId2 = null;
+		String lsUsername1 = "testuser-unlinked1@test.com";
+		String lsPwd1 = "secret";
+		String lsUsername2 = "testuser-unlinked2@test.com";
+		String lsPwd2 = "secret";
+		
+		Admin loAdmin = new Admin(new QuickConfig());
+		lsId1 = loAdmin.checkUser(lsUsername1, lsPwd1);
+		lsId2 = loAdmin.checkUser(lsUsername1, lsPwd1);
+
+		if (lsId1 == null)
+			loAdmin.createUser(lsUsername1, lsPwd1, "testingUser1", "testingUser1");
+
+			if (lsId2 == null)
+				loAdmin.createUser(lsUsername2, lsPwd2, "testingUser2", "testingUser2");
+	}
+	
 	@Test
 	public void testLinkUsers() {
 		String lsId1 = null;
@@ -45,7 +70,7 @@ public class AdminTest {
 		QuickConfig loCfg = new QuickConfig("https://patx-pacte.crim.ca", "", "", "test@test.com", "secret", "", "",
 				true, 1);
 
-		Admin loAdmin = new Admin(loCfg);		
+		Admin loAdmin = new Admin(loCfg);
 		lsId1 = loAdmin.createUser(lsUsername1, lsPwd1, UUID.randomUUID().toString(), UUID.randomUUID().toString());
 		lsId2 = loAdmin.createUser(lsUsername2, lsPwd2, UUID.randomUUID().toString(), UUID.randomUUID().toString());
 

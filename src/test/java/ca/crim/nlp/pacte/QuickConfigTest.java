@@ -52,15 +52,21 @@ public class QuickConfigTest {
 		assertNotNull(loCfg.poCred.get(USERTYPE.CustomUser));
 		assertNotNull(loCfg.poCred.get(USERTYPE.PacteAdmin));
 		assertNotNull(loCfg.poCred.get(USERTYPE.PSCAdmin));
-		
 
-		assertEquals("1",loCfg.poCred.get(USERTYPE.PSCAdmin).getUsername());
-		assertEquals("2",loCfg.poCred.get(USERTYPE.PSCAdmin).getPassword());
+		assertEquals("1", loCfg.poCred.get(USERTYPE.PSCAdmin).getUsername());
+		assertEquals("2", loCfg.poCred.get(USERTYPE.PSCAdmin).getPassword());
 
-		assertEquals("3",loCfg.poCred.get(USERTYPE.PacteAdmin).getUsername());
-		assertEquals("4",loCfg.poCred.get(USERTYPE.PacteAdmin).getPassword());
+		assertEquals("3", loCfg.poCred.get(USERTYPE.PacteAdmin).getUsername());
+		assertEquals("4", loCfg.poCred.get(USERTYPE.PacteAdmin).getPassword());
 
-		assertEquals("5",loCfg.poCred.get(USERTYPE.CustomUser).getUsername());
-		assertEquals("6",loCfg.poCred.get(USERTYPE.CustomUser).getPassword());		
+		assertEquals("5", loCfg.poCred.get(USERTYPE.CustomUser).getUsername());
+		assertEquals("6", loCfg.poCred.get(USERTYPE.CustomUser).getPassword());
+	}
+
+	@Test
+	public void testDefaultAdminConfig() {
+		QuickConfig loCfg = new QuickConfig();
+
+		assertNotNull(loCfg.getUserCredential(USERTYPE.PacteAdmin).getToken());
 	}
 }

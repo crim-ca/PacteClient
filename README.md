@@ -9,7 +9,7 @@ Client Java pour un accès simplifié aux données et fonctionnalités de la [pl
 Définir l'adresse du serveur et vos accès à l'instance de PACTE utilisé :
 
 ```
-QuickConfig config = new QuickConfig( "https://patx-pacte.crim.ca", "<username>", "<password>", false, 1);
+QuickConfig config = new QuickConfig( "https://patx-pacte.crim.ca", "<nom utilisateur>", "<mot de passe>", false, 1);
 ```
 
 Vous pouvez alors instancier la classe nécessaire pour avoir accès aux fonctions (ici avec la classe `Corpus`) :
@@ -32,11 +32,11 @@ Si vous utilisez la plateforme PACTE pour vos recherches, prière d'utiliser la 
 
 # PacteClient
 
-Java client for an easy access to data and functionlities of [PACTE platform](http://pacte.crim.ca).
+Java client for an easy access to data and functionalities of [PACTE platform](http://pacte.crim.ca).
 
 ## Usage 
 
-Define the server address and your credentials for the PACTE's isntance used:
+Define the server address and your credentials for the PACTE's instance used:
 
 ```
 QuickConfig config = new QuickConfig( "https://patx-pacte.crim.ca", "<username>", "<password>", false, 1);
@@ -46,12 +46,12 @@ You can then use the required class to access related functions (here with the `
 
 ```
 Corpus corpus = new Corpus(config);
-corpus.createCorpus("Nouveau corpus", "fr_fr,en_en");
+corpus.createCorpus("New corpus", "fr_fr,en_en");
 ```
 
 ## Credits and acknowledgements
 
-This client have been produced by the [Speech and Text](http://crim.ca/en/teams/speech-and-text) team at CRIM as part of the [Pacte](http://pacte.crim.ca) project. The project was supported by CANARIE and the *ministère de l’Économie, de la Science et de l’Innovation* (MESI) of the Government of Québec.
+This client has been produced by the [Speech and Text](http://crim.ca/en/teams/speech-and-text) team at CRIM as part of the [Pacte](http://pacte.crim.ca) project. The project was supported by CANARIE and the *ministère de l’Économie, de la Science et de l’Innovation* (MESI) of the Government of Québec.
 
 ## References
 If you use the PACTE platform for your research, kindly use the following reference:

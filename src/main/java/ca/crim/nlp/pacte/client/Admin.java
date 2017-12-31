@@ -22,6 +22,7 @@ public class Admin {
 	}
 
 	/**
+	 * Reset the password of a user
 	 * 
 	 * @param tsUsername
 	 * @param tsOldPassword
@@ -63,14 +64,20 @@ public class Admin {
 								+ tsNom + "\",\"email\":\"" + tsUsername + "\", \"jwtAudience\": [\"Pacte\"]}",
 						USERTYPE.PacteAdmin);
 
-		if (lsReturn != null && !lsReturn.isEmpty() && !lsReturn.toLowerCase().contains("conflict")) {
-			System.out.println("Utilisateur " + tsUsername + " a été créé!");
-			System.out.println(lsReturn);
+		if (lsReturn != null && !lsReturn.isEmpty() && lsReturn.toLowerCase().contains("userprofileid")) {
+			if (poCfg.getVerbose()) {
+				System.out.println("Utilisateur " + tsUsername + " a été créé!");
+				System.out.println(lsReturn);
+			}
 			return lsReturn.substring(lsReturn.indexOf("userProfileId\":\"") + 16,
 					lsReturn.indexOf("\"", lsReturn.indexOf("userProfileId\":\"") + 16));
 
-		} else if (lsReturn.toLowerCase().contains("conflict")) {
-			System.out.println("Utilisateur " + tsUsername + " existant! (possiblement avec d'autres accès)");
+		} else if (poCfg.getVerbose()) {
+			if (lsReturn.toLowerCase().contains("conflict"))
+				System.err.println("Utilisateur " + tsUsername + " existant! (possiblement avec d'autres accès)");
+
+			else if (lsReturn.toLowerCase().contains("Unauthorized"))
+				System.out.println("Accès administrateur invalides!");
 		}
 
 		return null;
@@ -89,14 +96,14 @@ public class Admin {
 		lsId = checkUser(poCfg.getUserCredential(USERTYPE.CustomUser).getUsername(),
 				poCfg.getUserCredential(USERTYPE.CustomUser).getPassword());
 
-		poCfg.deleteRequest(poCfg.getPacteBackend() + "/PlatformUsers/myPlatformUserContact/" + lsId,
+		poCfg.deleteRequest(poCfg.getPacteBackend() + "PlatformUsers/platformUser/" + lsId,
 				USERTYPE.CustomUser, null);
 
 		lsId = null;
 		lsId = checkUser(poCfg.getUserCredential(USERTYPE.CustomUser).getUsername(),
 				poCfg.getUserCredential(USERTYPE.CustomUser).getPassword());
-		
-		return lsId == null;
+
+		return (lsId == null);
 	}
 
 	/**
