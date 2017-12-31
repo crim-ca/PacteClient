@@ -1,7 +1,11 @@
 package ca.crim.nlp.pacte.client;
 
 import java.io.File;
+import java.io.IOException;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,13 +41,14 @@ public class Corpus {
 	 */
 	public boolean exportToDisk(String tsCorpusId, String tsOutputPath, List<String> tasExportGroupId) {
 		String lsReturn = "";
-		Map<String, String> lasBuckets = new HashMap<String, String>();
+		Map<String, List<String>> lasBuckets = new HashMap<String, List<String>>();
 		File loDocsFolder = null;
 		File loGroupsFolder = null;
 
 		// Prepare the subfolders
 		if (!(new File(tsOutputPath)).exists())
 			return false;
+
 		loDocsFolder = new File(tsOutputPath, "documents");
 		loDocsFolder.mkdirs();
 		loGroupsFolder = new File(tsOutputPath, "groups");
@@ -53,13 +58,27 @@ public class Corpus {
 		lsReturn = poCfg.getRequest(poCfg.getPacteBackend() + "RACSProxy/corpora/" + tsCorpusId + "/structure",
 				USERTYPE.CustomUser, null);
 		if (lsReturn != null && !lsReturn.isEmpty()) {
+			// Save to keep track or group names and schemas
+			writeFile(lsReturn, "CorpusStructure.json", tsOutputPath);
+
 			JSONObject loRet = new JSONObject(lsReturn);
 			for (int lniCpt = 0; lniCpt < loRet.getJSONArray("buckets").length(); lniCpt++) {
 				String lsId = ((JSONObject) loRet.getJSONArray("buckets").get(lniCpt)).getString("id");
-
+ 
 				if ((tasExportGroupId == null) || tasExportGroupId.isEmpty() || tasExportGroupId.contains(lsId)) {
-					lasBuckets.put(lsId, loRet.getJSONArray("buckets").get(lniCpt).toString());
 					new File(loGroupsFolder, lsId).mkdirs();
+
+					lasBuckets.put(lsId, new ArrayList<String>());
+					JSONArray loSchemas = ((JSONObject) loRet.getJSONArray("buckets").get(lniCpt))
+							.getJSONArray("schemas");
+					for (int lniCptSchema = 0; lniCptSchema < loSchemas.length(); lniCptSchema++) {
+						String lsName = ((JSONObject) loSchemas.get(lniCptSchema)).getString("schemaType");
+						lasBuckets.get(lsId).add(((JSONObject) loSchemas.get(lniCptSchema)).getString("schemaType"));
+						String lsSchemaId = getSchemaId(lsName, tsCorpusId, lsId);
+						if (lsSchemaId != null)
+							writeFile(getSchema(lsSchemaId), lsName + ".schema",
+									new File(loGroupsFolder, lsId).getAbsolutePath());
+					}
 				}
 			}
 		}
@@ -72,13 +91,38 @@ public class Corpus {
 					return false;
 				}
 
-		// List documents and download them
+		// List documents
+		List<PacteDocument> loDocs = getDocuments(tsCorpusId);
+		// and download them
+		for (PacteDocument loDoc : loDocs) {
+			writeFile(poCfg.getRequest(
+					poCfg.getPacteBackend() + "RACSProxy/corpora/" + tsCorpusId + "/documents/" + loDoc.getID(),
+					USERTYPE.CustomUser, null), loDoc.getID() + ".json", loDocsFolder.getAbsolutePath());
 
-		// List annotations per group and store them
-
+			// List annotations per group and store them
+			for (String lsGroupId : lasBuckets.keySet()) {
+				String lsSchemas = "";
+				for (String lsType : lasBuckets.get(lsGroupId))
+					lsSchemas += lsGroupId + ":" + lsType + ",";
+				// Get each docs/groups annotation
+				writeFile(
+						getAnnotations(tsCorpusId, loDoc.getID(),
+								lsSchemas.isEmpty() ? "" : lsSchemas.substring(0, lsSchemas.length() - 1)),
+						loDoc.getID() + ".json",
+						new File(loGroupsFolder.getAbsolutePath(), lsGroupId).getAbsolutePath());
+			}
+		}
+		// Save schema
 		return false;
 	}
 
+	/**
+	 * Return corpus unique identification from the name. In case there are several
+	 * corpora with the same name, the first is returned.
+	 * 
+	 * @param tsNomCorpus
+	 * @return
+	 */
 	public String getCorpusId(String tsNomCorpus) {
 		String lsIdCorpus = "";
 		String lsReturn = "";
@@ -121,6 +165,51 @@ public class Corpus {
 			return null;
 
 		return lsIdCorpus;
+	}
+
+	/**
+	 * 
+	 * @param tsCorpusId
+	 * @return
+	 */
+	public List<PacteDocument> getDocuments(String tsCorpusId) {
+		String lsResponse = null;
+		List<NameValuePair> loValues = new ArrayList<NameValuePair>();
+		List<PacteDocument> loDocs = new ArrayList<PacteDocument>();
+		Integer lniMaxDoc = Integer.MAX_VALUE;
+		Integer lniCptPage = 0;
+
+		if (tsCorpusId == null || tsCorpusId.trim().isEmpty())
+			return null;
+
+		loValues.add(new BasicNameValuePair("entriesperpage", "2"));
+		loValues.add(new BasicNameValuePair("page", lniCptPage.toString()));
+
+		while (loDocs.size() < lniMaxDoc) {
+			lsResponse = null;
+
+			// Aller chercher la prochaine page
+			loValues.remove(loValues.size() - 1);
+			loValues.add(new BasicNameValuePair("page", (++lniCptPage).toString()));
+
+			lsResponse = poCfg.getRequest(poCfg.getPacteBackend() + "Corpora/documentsCorpus/" + tsCorpusId,
+					USERTYPE.CustomUser, loValues);
+			// System.out.println(lsResponse);
+
+			if (lsResponse == null || lsResponse.contains("documents\":[]"))
+				return loDocs;
+			lniMaxDoc = new JSONObject(lsResponse).getInt("documentCount");
+
+			JSONArray loJson = new JSONObject(lsResponse).getJSONArray("documents");
+			for (int lniCpt = 0; lniCpt < loJson.length(); lniCpt++) {
+				JSONObject loDoc = (JSONObject) loJson.get(lniCpt);
+				loDocs.add(new PacteDocument(loDoc.getString("id"), loDoc.getString("title"), null, null,
+						loDoc.getString("language"), loDoc.getLong("docByteSize"), loDoc.getString("dateAdded"),
+						loDoc.getString("path")));
+			}
+		}
+
+		return loDocs;
 	}
 
 	/**
@@ -182,6 +271,24 @@ public class Corpus {
 	}
 
 	/**
+	 * 
+	 * @param tsSchemaId
+	 * @return
+	 */
+	public String getSchema(String tsSchemaId) {
+		String lsSchema = null;
+
+		// Aller chercher le schéma
+		lsSchema = poCfg.getRequest(poCfg.getPacteBackend() + "Schemas/schema/" + tsSchemaId, USERTYPE.CustomUser,
+				null);
+
+		if (lsSchema == null || lsSchema.isEmpty())
+			return null;
+		else
+			return lsSchema;
+	}
+
+	/**
 	 * Get schema id from name, filtered by corpus and group
 	 * 
 	 * @param tsSchemaName
@@ -203,12 +310,18 @@ public class Corpus {
 
 			if (((String) ((JSONObject) loObj.get("schema")).get("schemaType")).equalsIgnoreCase(tsSchemaName)) {
 				lsSchemaId = ((String) ((JSONObject) loObj.get("schema")).get("id"));
-				JSONArray loaBuckets = loObj.getJSONArray("relatedCorpusBuckets");
+				JSONArray loaCorpus = loObj.getJSONArray("relatedCorpusBuckets");
 
-				if ((tsBucketId == null || tsBucketId == "") && loaBuckets.length() == 0)
+				// Schema pas dans un groupe
+				if ((tsBucketId == null || tsBucketId == "") && (tsCorpusId == null || tsCorpusId == "") && loaCorpus.length() == 0)
 					return lsSchemaId;
-				else if (tsBucketId != null && !tsBucketId.isEmpty()) {
+				else if (((tsBucketId != null && !tsBucketId.isEmpty()) || (tsCorpusId != null || !tsCorpusId.isEmpty())) && loaCorpus.length() > 0) {
 					// Vérifier que la bucket en bien enregistrée
+					String lsCorp = ((JSONObject) loaCorpus.get(0)).getString("corpusId");
+					String lsBuck = ((JSONObject) loaCorpus.get(0)).getString("bucketId");
+					
+					if (lsCorp.isEmpty()?true:lsCorp.equals(tsCorpusId) && lsBuck.isEmpty()?true:lsBuck.equals(tsBucketId))
+						return lsSchemaId;
 				}
 			}
 		}
@@ -274,7 +387,7 @@ public class Corpus {
 			lsSource = new JSONObject(lsReturn).getString("source");
 			lsLanguages = new JSONObject(lsReturn).getString("language");
 
-			return new PacteDocument(tsDocumentID, lsTitle, lsContent, lsSource, lsLanguages);
+			return new PacteDocument(tsDocumentID, lsTitle, lsContent, lsSource, lsLanguages, null, null, null);
 		}
 
 		return null;
@@ -308,7 +421,7 @@ public class Corpus {
 	 * @param tsToken
 	 * @return
 	 */
-	public String getBucketID(String tsBucketName, String tsCorpusId) {
+	public String getGroupId(String tsBucketName, String tsCorpusId) {
 		String lsReturn = "";
 		List<NameValuePair> lasParam = new ArrayList<NameValuePair>();
 
@@ -326,7 +439,36 @@ public class Corpus {
 		return null;
 	}
 
+	public String getAnnotations(String tsCorpusId, String tsDocId, String tsSchemaTypes) {
+		String lsReturn = "";
+		List<NameValuePair> lasParam = new ArrayList<NameValuePair>();
+
+		lasParam.add(new BasicNameValuePair("schemaTypes", tsSchemaTypes));
+
+		lsReturn = poCfg.getRequest(
+				poCfg.getPacteBackend() + "RACSProxy/annosearch/corpora/" + tsCorpusId + "/documents/" + tsDocId,
+				USERTYPE.CustomUser, lasParam);
+
+		if (lsReturn != null && !lsReturn.isEmpty()) {
+			return lsReturn;
+		}
+		return null;
+	}
+
 	public boolean copyAnnotationGroup(String tsCorpusId, String tsGroupFromId, String tsGroupToId) {
 		return false;
+	}
+
+	private boolean writeFile(String tsContent, String tsFileName, String tsPath) {
+		try {
+			Files.write((new File(tsPath, tsFileName)).toPath(), Arrays.asList(tsContent.split("\r\n")),
+					Charset.forName("UTF-8"));
+
+		} catch (IOException e) {
+			e.printStackTrace();
+			return false;
+		}
+
+		return true;
 	}
 }

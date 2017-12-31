@@ -73,22 +73,23 @@ public class CorpusTest {
 	@Test
 	public void exportCorpus() {
 		String lsCorpusId = null;
-		File loExportPath = new File(poTestFolder.toString(), UUID.randomUUID().toString());
+		File loExportPath = null;
 		List<String> lasGroupList = new ArrayList<String>();
 
 		Corpus loCorpus = new Corpus(new QuickConfig());
 
-		lsCorpusId = SampleBuilder.smallCorpus(loCorpus);
-
-		System.out.println(loExportPath.getAbsolutePath().toString());
+		// lsCorpusId = SampleBuilder.smallCorpus(loCorpus);
+		lsCorpusId = loCorpus.getCorpusId("Le Monde");
+		loExportPath = new File(poTestFolder.toString(), lsCorpusId);
 		loExportPath.mkdirs();
+		
 		loCorpus.exportToDisk(lsCorpusId, loExportPath.toString(), lasGroupList);
 
 		// Stuff exported?
 		assertTrue(loExportPath.list().length > 0);
-		
+
 		// Only two groups?
-		
+
 		// All documents exported?
 	}
 }

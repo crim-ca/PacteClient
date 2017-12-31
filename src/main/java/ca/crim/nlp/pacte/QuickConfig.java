@@ -1,7 +1,6 @@
 package ca.crim.nlp.pacte;
 
 import java.io.BufferedReader;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -166,7 +165,7 @@ public class QuickConfig {
 		if (toParams != null)
 			loUriBuilder.addParameters(toParams);
 
-		HttpGet loGet = new HttpGet(tsTargetEndpoint);
+		HttpGet loGet = new HttpGet(loUriBuilder.toString());
 		loGet.addHeader("Authorization", "Bearer " + poCred.get(toUsertype).getToken());
 		loGet.addHeader("AuthorizationAudience", "Pacte");
 
@@ -369,7 +368,7 @@ public class QuickConfig {
 		String[] lasConfig = new String[9];
 
 		try {
-			input = new FileInputStream("config.properties");
+			input = ClassLoader.class.getResourceAsStream("/ca/crim/nlp/pacte/config.properties");
 
 			// load a properties file
 			prop.load(input);
@@ -377,16 +376,16 @@ public class QuickConfig {
 			// get the property value and print it out
 			lasConfig[0] = prop.getProperty("server");
 			lasConfig[1] = prop.getProperty("PSCAdmin");
-			lasConfig[2] = prop.getProperty("PSCAdminUser");
+			lasConfig[2] = prop.getProperty("PSCAdminPwd");
 			lasConfig[3] = prop.getProperty("PACTEAdmin");
-			lasConfig[4] = prop.getProperty("PACTEAdminUser");
+			lasConfig[4] = prop.getProperty("PACTEAdminPwd");
 			lasConfig[5] = prop.getProperty("StandardUser");
 			lasConfig[6] = prop.getProperty("StandardUserPwd");
 			lasConfig[7] = prop.getProperty("Verbose");
 			lasConfig[8] = prop.getProperty("TokenRenewDelay");
 
 		} catch (IOException ex) {
-			
+			ex.printStackTrace();
 		} finally {
 			if (input != null) {
 				try {
