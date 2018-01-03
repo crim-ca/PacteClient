@@ -137,9 +137,10 @@ public class Corpus {
 				}
 			}
 		} catch (IOException ex) {
+			return null;
 		}
 
-		return null;
+		return lsCorpusNewId;
 	}
 
 	/**
@@ -224,16 +225,19 @@ public class Corpus {
 				String lsSchemas = "";
 				for (String lsType : lasBuckets.get(lsGroupId))
 					lsSchemas += lsGroupId + ":" + lsType + ",";
-				// Get each docs/groups annotation
-				writeFile(
-						getAnnotations(tsCorpusId, loDoc.getID(),
-								lsSchemas.isEmpty() ? "" : lsSchemas.substring(0, lsSchemas.length() - 1)),
-						loDoc.getID() + ".json",
-						new File(loGroupsFolder.getAbsolutePath(), lsGroupId).getAbsolutePath());
+				// Get each docs/groups annotations
+				if (!lsSchemas.isEmpty()) {
+					String lsAnnots = getAnnotations(tsCorpusId, loDoc.getID(),
+							lsSchemas.substring(0, lsSchemas.length() - 1));
+					writeFile(lsAnnots, loDoc.getID() + ".json",
+							new File(loGroupsFolder.getAbsolutePath(), lsGroupId).getAbsolutePath());
+				}
 			}
 		}
-		// Save schema
-		return false;
+
+		// Save schemas
+
+		return true;
 	}
 
 	/**
@@ -444,7 +448,7 @@ public class Corpus {
 				JSONArray loaCorpus = loObj.getJSONArray("relatedCorpusBuckets");
 
 				// Schema pas dans un groupe
-				if ((tsBucketId == null || tsBucketId == "") && (tsCorpusId == null || tsCorpusId == "")
+				if ((tsBucketId == null || tsBucketId == "") && (tsCorpusId == null || tsCorpusId.isEmpty())
 						&& loaCorpus.length() == 0)
 					return lsSchemaId;
 				else if (((tsBucketId != null && !tsBucketId.isEmpty())
@@ -535,13 +539,13 @@ public class Corpus {
 	 */
 	public Integer getSize(String tsCorpusId) {
 		String lsResponse = null;
-		lsResponse = poCfg.getRequest(poCfg.getPacteBackend() + "RACSProxy/corpora/" + tsCorpusId + "/structure",
+		lsResponse = poCfg.getRequest(poCfg.getPacteBackend() + "Corpora/corpus/" + tsCorpusId,
 				USERTYPE.CustomUser, null);
 
 		if (lsResponse != null && !lsResponse.isEmpty()) {
 			JSONObject loJson = new JSONObject(lsResponse);
-			if (loJson.getString("") != null)
-				return loJson.getInt("");
+			if (loJson.has("documentCount"))
+				return loJson.getInt("documentCount");
 		}
 
 		return null;
@@ -562,7 +566,8 @@ public class Corpus {
 				poCfg.getPacteBackend() + "RACSProxy/corpora/" + tsCorpusId + "/buckets/" + tsGroupId + "/annotations",
 				tsAnnotation, USERTYPE.CustomUser);
 
-		if (lsReturn != null && !lsReturn.isEmpty() && !lsReturn.contains("Not Found:"))
+		if (lsReturn != null && !lsReturn.isEmpty() && !lsReturn.contains("Not Found:")
+				&& !lsReturn.contains("illegal"))
 			lsAnnotId = poCfg.getJsonFeature(lsReturn, "id");
 
 		return lsAnnotId;

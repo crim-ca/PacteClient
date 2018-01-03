@@ -67,8 +67,7 @@ public class AdminTest {
 		String lsUsername2 = UUID.randomUUID().toString();
 		String lsPwd2 = UUID.randomUUID().toString();
 
-		QuickConfig loCfg = new QuickConfig("https://patx-pacte.crim.ca", "", "", "test@test.com", "secret", "", "",
-				true, 1);
+		QuickConfig loCfg = new QuickConfig();
 
 		Admin loAdmin = new Admin(loCfg);
 		lsId1 = loAdmin.createUser(lsUsername1, lsPwd1, UUID.randomUUID().toString(), UUID.randomUUID().toString());

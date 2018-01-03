@@ -4,12 +4,21 @@ import static org.junit.Assert.assertNotEquals;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.Before;
 import org.junit.Test;
 
 import ca.crim.nlp.pacte.QuickConfig;
 
 public class LexiconTest {
 
+	/**
+	 * Create the test user
+	 */
+	@Before
+	public void checkTestSubject() {
+		SampleBuilder.createTestingUser();
+	}
+	
     @Test
     public void checkLexique() {
         String lsIdLexique = null;
