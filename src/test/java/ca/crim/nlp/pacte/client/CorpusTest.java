@@ -1,14 +1,17 @@
 package ca.crim.nlp.pacte.client;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -19,10 +22,18 @@ public class CorpusTest {
 	@Rule
 	public TemporaryFolder poTestFolder = new TemporaryFolder();
 
-	@Test
+	/**
+	 * Create the test user
+	 */
+	@Before
+	public void checkTestSubject() {
+		SampleBuilder.createTestingUser();
+	}
+
 	/**
 	 * Create, populate and delete a corpus.
 	 */
+	@Test
 	public void corpusLifeCycle() throws InterruptedException {
 		String lsNewCorpusName = UUID.randomUUID().toString() + UUID.randomUUID().toString();
 		String lsCorpusID = null;
@@ -70,26 +81,67 @@ public class CorpusTest {
 		System.out.println("Done!");
 	}
 
+	/**
+	 * Export the sample corpus in a temporary folder.
+	 * 
+	 * @return The path for the exported corpus
+	 * @throws IOException
+	 */
 	@Test
-	public void exportCorpus() {
+	public void testExportCorpus() throws IOException {
 		String lsCorpusId = null;
-		File loExportPath = null;
-		List<String> lasGroupList = new ArrayList<String>();
-
+		String lsExportPath = null;
 		Corpus loCorpus = new Corpus(new QuickConfig());
 
-		// lsCorpusId = SampleBuilder.smallCorpus(loCorpus);
-		lsCorpusId = loCorpus.getCorpusId("Le Monde");
-		loExportPath = new File(poTestFolder.toString(), lsCorpusId);
-		loExportPath.mkdirs();
-		
-		loCorpus.exportToDisk(lsCorpusId, loExportPath.toString(), lasGroupList);
+		lsCorpusId = SampleBuilder.smallCorpus(loCorpus);
+		assertNotNull(lsCorpusId);
+
+		lsExportPath = exportCorpus(loCorpus, lsCorpusId);
+		System.out.println(lsExportPath);
 
 		// Stuff exported?
-		assertTrue(loExportPath.list().length > 0);
+		assertNotNull(lsExportPath);
+		assertTrue(new File(lsExportPath).list().length > 0);
 
-		// Only two groups?
+		// Only four groups?
 
 		// All documents exported?
+		assertEquals(2, new File(lsExportPath, "documents").list().length);
+
+	}
+
+	private String exportCorpus(Corpus toCorpus, String tsCorpusId) {
+		List<String> lasGroupList = new ArrayList<String>();
+		File loExportPath = null;
+
+		try {
+			loExportPath = poTestFolder.newFolder();
+		} catch (IOException e) {
+			e.printStackTrace();
+			return null;
+		}
+
+		return toCorpus.exportToDisk(tsCorpusId, loExportPath.getAbsolutePath(), lasGroupList)
+				? loExportPath.getAbsolutePath()
+				: null;
+	}
+
+	@Test
+	public void testImportCorpus() throws IOException {
+		String lsCorpusId = null;
+		Corpus loCorpus = new Corpus(new QuickConfig());
+		String lsSourcePath = null;
+
+		// Export the corpus before running the test
+		lsCorpusId = SampleBuilder.smallCorpus(loCorpus);
+		lsSourcePath = exportCorpus(loCorpus, lsCorpusId);
+
+		lsCorpusId = loCorpus.importCorpus(lsSourcePath);
+		assertNotNull(lsCorpusId);
+
+		assertTrue(loCorpus.getSize(lsCorpusId) >= 2);
+
+		// Delete imported corpus after successful test
+		loCorpus.deleteCorpus(lsCorpusId);
 	}
 }

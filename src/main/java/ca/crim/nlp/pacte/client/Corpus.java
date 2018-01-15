@@ -2,8 +2,12 @@ package ca.crim.nlp.pacte.client;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -23,6 +27,120 @@ public class Corpus {
 
 	public Corpus(QuickConfig toConfig) {
 		poCfg = toConfig;
+	}
+
+	/**
+	 * Import a corpus from exported files
+	 * 
+	 * @param tsCorpusPath
+	 *            Path to the corpus exported with the {@link exportToDisk} function
+	 * @return The new corpus unique identification
+	 */
+	public String importCorpus(String tsCorpusPath) {
+		String lsReturn = null;
+		String lsCorpusNewId = null;
+		Map<String, String> laoGroups = new HashMap<String, String>();
+		String lsCorpusOldId = null;
+		String lsLang = "";
+
+		if (!new File(tsCorpusPath).exists())
+			return null;
+
+		// Lire les métadata et recréer le corpus
+		lsReturn = readFile(new File(tsCorpusPath, "corpus.json").getAbsolutePath());
+		if (lsReturn == null)
+			return null;
+		JSONObject loCorpMeta = new JSONObject(lsReturn);
+		lsCorpusOldId = loCorpMeta.getString("id");
+		for (int lniCpt = 0; lniCpt < loCorpMeta.getJSONArray("languages").length(); lniCpt++)
+			lsLang += loCorpMeta.getJSONArray("languages").get(lniCpt) + ",";
+		lsCorpusNewId = createCorpus(loCorpMeta.getString("title") + " - Import",
+				lsLang.substring(0, lsLang.length() - 1));
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e1) {
+		}
+
+		// Recréer les groupes et ajouter les schémas
+		lsReturn = readFile(new File(tsCorpusPath, "corpusStructure.json").getAbsolutePath());
+		JSONArray lasGroups = new JSONObject(lsReturn).getJSONArray("buckets");
+
+		for (int lniCpt = 0; lniCpt < lasGroups.length(); lniCpt++) {
+			String lsGroupName = ((JSONObject) lasGroups.get(lniCpt)).getString("name");
+			String lsOldGroupId = ((JSONObject) lasGroups.get(lniCpt)).getString("id");
+			String lsGroupId = getGroupId(lsGroupName, lsCorpusNewId);
+			if (lsGroupId == null)
+				lsGroupId = createBucket(lsCorpusNewId, lsGroupName);
+			laoGroups.put(lsOldGroupId, lsGroupId);
+
+			// Ajouter les schémas disponibles
+			JSONArray lasSchemas = ((JSONObject) lasGroups.get(lniCpt)).getJSONArray("schemas");
+			for (int lniCptSchema = 0; lniCptSchema < lasSchemas.length(); lniCptSchema++) {
+				String lsSchema = null;
+				File loFile = new File(tsCorpusPath, "groups/" + lsOldGroupId + "/"
+						+ ((JSONObject) lasSchemas.get(lniCptSchema)).getString("schemaType") + ".schema");
+				if (loFile.exists())
+					lsSchema = new JSONObject(readFile(loFile.getAbsolutePath())).getJSONObject("schema")
+							.getString("schemaJsonContent");
+				else if (loFile.getName().equalsIgnoreCase("document_meta.schema"))
+					try {
+						lsSchema = new String(
+								Files.readAllBytes(Paths.get(ClassLoader.class
+										.getResource("/ca/crim/nlp/pacte/client/document_meta.json").toURI())),
+								Charset.forName("UTF-8"));
+					} catch (IOException | URISyntaxException e) {
+						e.printStackTrace();
+					}
+
+				String lsSchemaId = getSchemaId(new JSONObject(lsSchema).getString("schemaType"), "", "");
+				if (lsSchemaId == null)
+					lsSchemaId = registerSchema(lsSchema);
+				copySchemaToGroup(lsSchemaId, lsCorpusNewId, lsGroupId);
+			}
+		}
+
+		/*
+		 * Uploader les documents et créer la table de correspondance pour les
+		 * identifiants
+		 */
+		try (DirectoryStream<Path> directoryStream = Files
+				.newDirectoryStream(Paths.get(new File(tsCorpusPath, "documents").getAbsolutePath()))) {
+			for (Path path : directoryStream) {
+				String lsDocEx = readFile(path.toAbsolutePath().toString());
+				JSONObject loDoc = new JSONObject(lsDocEx);
+				String lsDocOldId = loDoc.getString("id");
+				String lsDocId = addDocument(lsCorpusNewId, loDoc.getString("text"), loDoc.getString("title"),
+						loDoc.getString("source"), loDoc.getString("language"));
+				// Ajouter les annotations
+				for (String lsGroup : laoGroups.keySet()) {
+					File loAnnotFile = new File(tsCorpusPath, "groups/" + lsGroup + "/" + lsDocOldId + ".json");
+					if (!loAnnotFile.exists())
+						continue;
+					String lsAnnot = readFile(loAnnotFile.getAbsolutePath());
+					JSONObject loAnnots = new JSONObject(lsAnnot);
+					if (loAnnots.isNull(lsCorpusOldId))
+						continue;
+					loAnnots = loAnnots.getJSONObject(lsCorpusOldId).getJSONObject(lsGroup);
+
+					for (int lniCpt = 0; lniCpt < loAnnots.names().length(); lniCpt++) {
+						JSONArray loAnnotations = loAnnots.getJSONArray(loAnnots.names().get(lniCpt).toString());
+						for (int lniCptAnn = 0; lniCptAnn < loAnnotations.length(); lniCptAnn++) {
+							JSONObject loAnn = loAnnotations.getJSONObject(lniCptAnn);
+							loAnn.remove("annotationId");
+							loAnn.remove("_corpusID");
+							loAnn.put("_corpusID", lsCorpusNewId);
+							loAnn.remove("_documentID");
+							loAnn.put("_documentID", lsDocId);
+							addAnnotation(lsCorpusNewId, laoGroups.get(lsGroup), loAnn.toString());
+						}
+					}
+				}
+			}
+		} catch (IOException ex) {
+			return null;
+		}
+
+		return lsCorpusNewId;
 	}
 
 	/**
@@ -54,6 +172,9 @@ public class Corpus {
 		loGroupsFolder = new File(tsOutputPath, "groups");
 		loGroupsFolder.mkdirs();
 
+		// Download corpus specs and save them
+		writeFile(getCorpusMetadata(tsCorpusId), "corpus.json", tsOutputPath);
+
 		// Download the corpus structure and replicate it
 		lsReturn = poCfg.getRequest(poCfg.getPacteBackend() + "RACSProxy/corpora/" + tsCorpusId + "/structure",
 				USERTYPE.CustomUser, null);
@@ -64,7 +185,7 @@ public class Corpus {
 			JSONObject loRet = new JSONObject(lsReturn);
 			for (int lniCpt = 0; lniCpt < loRet.getJSONArray("buckets").length(); lniCpt++) {
 				String lsId = ((JSONObject) loRet.getJSONArray("buckets").get(lniCpt)).getString("id");
- 
+
 				if ((tasExportGroupId == null) || tasExportGroupId.isEmpty() || tasExportGroupId.contains(lsId)) {
 					new File(loGroupsFolder, lsId).mkdirs();
 
@@ -104,16 +225,30 @@ public class Corpus {
 				String lsSchemas = "";
 				for (String lsType : lasBuckets.get(lsGroupId))
 					lsSchemas += lsGroupId + ":" + lsType + ",";
-				// Get each docs/groups annotation
-				writeFile(
-						getAnnotations(tsCorpusId, loDoc.getID(),
-								lsSchemas.isEmpty() ? "" : lsSchemas.substring(0, lsSchemas.length() - 1)),
-						loDoc.getID() + ".json",
-						new File(loGroupsFolder.getAbsolutePath(), lsGroupId).getAbsolutePath());
+				// Get each docs/groups annotations
+				if (!lsSchemas.isEmpty()) {
+					String lsAnnots = getAnnotations(tsCorpusId, loDoc.getID(),
+							lsSchemas.substring(0, lsSchemas.length() - 1));
+					writeFile(lsAnnots, loDoc.getID() + ".json",
+							new File(loGroupsFolder.getAbsolutePath(), lsGroupId).getAbsolutePath());
+				}
 			}
 		}
-		// Save schema
-		return false;
+
+		// Save schemas
+
+		return true;
+	}
+
+	/**
+	 * Get the definition of a corpus
+	 * 
+	 * @param tsCorpusId
+	 *            Unique identification of the targeted corpus
+	 * @return Json definition, null if not found.
+	 */
+	public String getCorpusMetadata(String tsCorpusId) {
+		return poCfg.getRequest(poCfg.getPacteBackend() + "Corpora/corpus/" + tsCorpusId, USERTYPE.CustomUser, null);
 	}
 
 	/**
@@ -313,14 +448,17 @@ public class Corpus {
 				JSONArray loaCorpus = loObj.getJSONArray("relatedCorpusBuckets");
 
 				// Schema pas dans un groupe
-				if ((tsBucketId == null || tsBucketId == "") && (tsCorpusId == null || tsCorpusId == "") && loaCorpus.length() == 0)
+				if ((tsBucketId == null || tsBucketId == "") && (tsCorpusId == null || tsCorpusId.isEmpty())
+						&& loaCorpus.length() == 0)
 					return lsSchemaId;
-				else if (((tsBucketId != null && !tsBucketId.isEmpty()) || (tsCorpusId != null || !tsCorpusId.isEmpty())) && loaCorpus.length() > 0) {
+				else if (((tsBucketId != null && !tsBucketId.isEmpty())
+						|| (tsCorpusId != null || !tsCorpusId.isEmpty())) && loaCorpus.length() > 0) {
 					// Vérifier que la bucket en bien enregistrée
 					String lsCorp = ((JSONObject) loaCorpus.get(0)).getString("corpusId");
 					String lsBuck = ((JSONObject) loaCorpus.get(0)).getString("bucketId");
-					
-					if (lsCorp.isEmpty()?true:lsCorp.equals(tsCorpusId) && lsBuck.isEmpty()?true:lsBuck.equals(tsBucketId))
+
+					if (lsCorp.isEmpty() ? true
+							: lsCorp.equals(tsCorpusId) && lsBuck.isEmpty() ? true : lsBuck.equals(tsBucketId))
 						return lsSchemaId;
 				}
 			}
@@ -394,6 +532,26 @@ public class Corpus {
 	}
 
 	/**
+	 * Get the number of documents in the corpus
+	 * 
+	 * @param tsCorpusId
+	 * @return
+	 */
+	public Integer getSize(String tsCorpusId) {
+		String lsResponse = null;
+		lsResponse = poCfg.getRequest(poCfg.getPacteBackend() + "Corpora/corpus/" + tsCorpusId,
+				USERTYPE.CustomUser, null);
+
+		if (lsResponse != null && !lsResponse.isEmpty()) {
+			JSONObject loJson = new JSONObject(lsResponse);
+			if (loJson.has("documentCount"))
+				return loJson.getInt("documentCount");
+		}
+
+		return null;
+	}
+
+	/**
 	 * Add a new annotation to a group.
 	 * 
 	 * @param tsCorpusId
@@ -408,7 +566,8 @@ public class Corpus {
 				poCfg.getPacteBackend() + "RACSProxy/corpora/" + tsCorpusId + "/buckets/" + tsGroupId + "/annotations",
 				tsAnnotation, USERTYPE.CustomUser);
 
-		if (lsReturn != null && !lsReturn.isEmpty())
+		if (lsReturn != null && !lsReturn.isEmpty() && !lsReturn.contains("Not Found:")
+				&& !lsReturn.contains("illegal"))
 			lsAnnotId = poCfg.getJsonFeature(lsReturn, "id");
 
 		return lsAnnotId;
@@ -470,5 +629,15 @@ public class Corpus {
 		}
 
 		return true;
+	}
+
+	private String readFile(String path) {
+		byte[] encoded;
+		try {
+			encoded = Files.readAllBytes(Paths.get(path));
+		} catch (IOException e) {
+			return null;
+		}
+		return new String(encoded, Charset.forName("UTF-8"));
 	}
 }
