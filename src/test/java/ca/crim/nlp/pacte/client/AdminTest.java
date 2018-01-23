@@ -11,6 +11,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 
+import ca.crim.nlp.pacte.Credential;
 import ca.crim.nlp.pacte.QuickConfig;
 
 public class AdminTest {
@@ -27,14 +28,14 @@ public class AdminTest {
 		QuickConfig loCfg = new QuickConfig();
 		loCfg.setCustomUser(lsUsername, lsPwd);
 		Admin loAdmin = new Admin(loCfg);
-		lsUserId = loAdmin.createUser(lsUsername, lsPwd, lsPrenom, lsNom);
+		lsUserId = loAdmin.createUser(lsUsername, lsPwd, lsPrenom, lsNom).getUserId();
 
 		assertNotNull(lsUserId);
 		assertEquals(36, lsUserId.length());
 		assertNotNull(loAdmin.checkUser(lsUsername, lsPwd));
 
 		loCfg.setCustomUser(lsUsername, lsPwd);
-		loAdmin.deleteUser();
+		loAdmin.deleteUser(lsUserId);
 		assertNull(loAdmin.checkUser(lsUsername, lsPwd));
 	}
 
@@ -60,26 +61,29 @@ public class AdminTest {
 	
 	@Test
 	public void testLinkUsers() {
-		String lsId1 = null;
-		String lsId2 = null;
+		Credential loId1 = null;
+		Credential loId2 = null;
 		String lsUsername1 = UUID.randomUUID().toString();
 		String lsPwd1 = UUID.randomUUID().toString();
 		String lsUsername2 = UUID.randomUUID().toString();
 		String lsPwd2 = UUID.randomUUID().toString();
 
 		QuickConfig loCfg = new QuickConfig();
-
 		Admin loAdmin = new Admin(loCfg);
-		lsId1 = loAdmin.createUser(lsUsername1, lsPwd1, UUID.randomUUID().toString(), UUID.randomUUID().toString());
-		lsId2 = loAdmin.createUser(lsUsername2, lsPwd2, UUID.randomUUID().toString(), UUID.randomUUID().toString());
+		
+		loId1 = loAdmin.createUser(lsUsername1, lsPwd1, UUID.randomUUID().toString(), UUID.randomUUID().toString());
+		loId2 = loAdmin.createUser(lsUsername2, lsPwd2, UUID.randomUUID().toString(), UUID.randomUUID().toString());
 
-		loCfg.setCustomUser(lsId1, lsPwd1);
-		assertTrue(loAdmin.addContact(lsId2));
-		loAdmin.deleteUser();
+		loCfg.setCustomUser(lsUsername1, lsPwd1);
+                loAdmin.removeContact(loId2.getUserId());
+		assertTrue(loAdmin.addContact(loId2.getUserProfileId()));
+		assertTrue(loAdmin.removeContact(loId2.getUserProfileId()));
+		
+		loAdmin.deleteUser(loId1.getUserId());
 		assertNull(loAdmin.checkUser(lsUsername1, lsPwd1));
 
-		loCfg.setCustomUser(lsId2, lsPwd2);
-		loAdmin.deleteUser();
+		loCfg.setCustomUser(lsUsername2, lsPwd2);
+		loAdmin.deleteUser(loId2.getUserId());
 		assertNull(loAdmin.checkUser(lsUsername2, lsPwd2));
 	}
 }

@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +27,7 @@ import org.json.JSONObject;
 public class QuickConfig {
     String psBaseURLAuthen = "";
     String psBaseURLPacteBE = "";
+    String psBaseURLPSCUser = "";
     Integer pniTokenRenewDelay = -12;
 
     private boolean pbVerbose = true;
@@ -52,6 +52,7 @@ public class QuickConfig {
             boolean tbVerbose, int tniTokenRenewDelay) {
         psBaseURLAuthen = tsBasePacteUrl.endsWith("/") ? tsBasePacteUrl : tsBasePacteUrl + "/";
         psBaseURLPacteBE = psBaseURLAuthen + "pacte-backend/";
+        psBaseURLPSCUser = psBaseURLAuthen + "psc-users-permissions-management/";
         pniTokenRenewDelay = tniTokenRenewDelay;
         pbVerbose = tbVerbose;
 
@@ -144,6 +145,10 @@ public class QuickConfig {
         return psBaseURLPacteBE;
     }
 
+    public String getPSCUserBackend() {
+        return psBaseURLPSCUser;
+    }
+
     /**
      * Call a GET request with preconfigured user credentials.
      * 
@@ -166,7 +171,7 @@ public class QuickConfig {
             loUriBuilder.addParameters(toParams);
 
         HttpGet loGet = new HttpGet(loUriBuilder.toString());
-        loGet.addHeader("Authorization", "Bearer " + poCred.get(toUsertype).getToken());
+        loGet.addHeader("Authorization", "Bearer " + getToken(poCred.get(toUsertype)));
         loGet.addHeader("AuthorizationAudience", "Pacte");
 
         try {
@@ -208,7 +213,7 @@ public class QuickConfig {
             loUriBuilder.addParameters(toParams);
 
         HttpDelete loDel = new HttpDelete(tsTargetEndpoint);
-        loDel.addHeader("Authorization", "Bearer " + poCred.get(toUsertype).getToken());
+        loDel.addHeader("Authorization", "Bearer " + getToken(poCred.get(toUsertype)));
         loDel.addHeader("AuthorizationAudience", "Pacte");
 
         try {
@@ -252,7 +257,7 @@ public class QuickConfig {
         }
 
         if (toUsertype != null) {
-            httpost.setHeader("Authorization", "Bearer " + poCred.get(toUsertype).getToken());
+            httpost.setHeader("Authorization", "Bearer " + getToken(poCred.get(toUsertype)));
             httpost.setHeader("AuthorizationAudience", "Pacte");
         }
 
@@ -299,7 +304,7 @@ public class QuickConfig {
             httput.setHeader("Accept", "application/json");
         }
 
-        httput.setHeader("Authorization", "Bearer " + poCred.get(toUsertype).getToken());
+        httput.setHeader("Authorization", "Bearer " + getToken(poCred.get(toUsertype)));
         httput.setHeader("AuthorizationAudience", "Pacte");
 
         // Executing the request.
@@ -335,6 +340,30 @@ public class QuickConfig {
 
     public boolean getVerbose() {
         return pbVerbose;
+    }
+
+    /**
+     * Get the authentication token, renewing it after the delay.
+     * 
+     * @return User's token
+     */
+    public String getToken(Credential toUserCredentials) {
+        String lsReturn = "";
+        Calendar ldElapsed = Calendar.getInstance();
+        ldElapsed.add(Calendar.HOUR, pniTokenRenewDelay);
+
+        if (toUserCredentials.getToken() == null || toUserCredentials.getTokenCreation().before(ldElapsed.getTime())) {
+            toUserCredentials.setToken(null);
+            lsReturn = postRequest(psBaseURLAuthen + "psc-authentication-service/FormLogin/login",
+                    "{\"username\": \"" + toUserCredentials.getUsername() + "\",\"password\": \""
+                            + toUserCredentials.getPassword() + "\",\"jwtAudience\": [\"Pacte\"]}",
+                    null);
+
+            if (lsReturn != null && !lsReturn.isEmpty() && !lsReturn.toLowerCase().contains("unauthorized"))
+                toUserCredentials.setToken(new JSONObject(lsReturn).getString("token"));
+        }
+
+        return toUserCredentials.getToken();
     }
 
     /**
@@ -398,58 +427,4 @@ public class QuickConfig {
         return lasConfig;
     }
 
-    public class Credential {
-        private String psUsername = null;
-        private String psPassword = null;
-        private String psToken = null;
-        private Date pdTokenCreation = new Date();
-        private Integer pniTokenRenewDelay = null;
-
-        Credential(String tsUsername, String tsPassword, int tniRenewHour) {
-            psUsername = tsUsername;
-            psPassword = tsPassword;
-            pniTokenRenewDelay = tniRenewHour > 0 ? tniRenewHour * -1 : tniRenewHour;
-        }
-
-        public String getUsername() {
-            return psUsername;
-        }
-
-        public String getPassword() {
-            return psPassword;
-        }
-
-        /**
-         * Get the authentication token, renewing it after the delay.
-         * 
-         * @return User's token
-         */
-        public String getToken() {
-            Calendar ldElapsed = Calendar.getInstance();
-            ldElapsed.add(Calendar.HOUR, pniTokenRenewDelay);
-
-            if (psToken == null || pdTokenCreation.before(ldElapsed.getTime()))
-                psToken = getToken(psUsername, psPassword);
-            return psToken;
-        }
-
-        /**
-         * Get a specific user credential token
-         * 
-         * @param tsUsername
-         * @param tsPassword
-         * @return
-         */
-        private String getToken(String tsUsername, String tsPassword) {
-            String lsReturn = "";
-
-            lsReturn = postRequest(psBaseURLAuthen + "psc-authentication-service/FormLogin/login", "{\"username\": \""
-                    + tsUsername + "\",\"password\": \"" + tsPassword + "\",\"jwtAudience\": [\"Pacte\"]}", null);
-
-            if (lsReturn != null && !lsReturn.isEmpty() && !lsReturn.toLowerCase().contains("unauthorized"))
-                return getJsonFeature(lsReturn, "token");
-
-            return null;
-        }
-    }
 }
