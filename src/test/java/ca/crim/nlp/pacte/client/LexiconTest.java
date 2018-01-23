@@ -54,5 +54,8 @@ public class LexiconTest {
         lsIdTerm = loLex.createTerm(lsIdLexique, "term1", "", "FR", null, null, null);
         assertNotEquals("", lsIdTerm);
         loLex.linkConceptTerm(lsIdConcept, lsIdTerm);
+        
+        // TODO : Détruire le lexique
+        
     }
 }

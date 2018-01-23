@@ -5,6 +5,8 @@ import ca.crim.nlp.pacte.QuickConfig.USERTYPE;
 
 import java.util.Map;
 
+import org.json.JSONObject;
+
 public class Lexicon {
 
     private QuickConfig poCfg = null;
@@ -23,16 +25,20 @@ public class Lexicon {
      */
     public String createLexicon(String tsLexiconName) {
         String lsReturn = "";
-        String lsIdLexicon = "";
+        String lsIdLexicon = null;
+        JSONObject loNewLex = null;
 
         lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Lexicons/lexicon",
                 "{\"title\": \"" + tsLexiconName.replace("\"", "\\\"") + "\","
                         + "\"description\": \"\",\"licence\": \"\",\"version\":\"\",\"source\":\"\",\"tagsetId\": {}}",
-                        USERTYPE.CustomUser);
+                USERTYPE.CustomUser);
 
-        if (lsReturn != null && !lsReturn.isEmpty()) {
-            lsIdLexicon = poCfg.getJsonFeature(lsReturn, "id");
-        }
+        loNewLex = new JSONObject(lsReturn);
+        if (lsReturn != null && !lsReturn.isEmpty() && loNewLex.has("id")) {
+            lsIdLexicon = loNewLex.getString("id");
+        } else
+            System.err.println("Create lexicon response : "
+                    + (loNewLex.has("message") ? loNewLex.getString("message") : "unknown"));
 
         return lsIdLexicon;
     }

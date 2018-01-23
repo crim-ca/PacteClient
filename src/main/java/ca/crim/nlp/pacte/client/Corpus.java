@@ -63,6 +63,8 @@ public class Corpus {
         }
 
         // Recréer les groupes et ajouter les schémas
+        if (!(new File(tsCorpusPath, "corpusStructure.json")).exists())
+            return null;
         lsReturn = readFile(new File(tsCorpusPath, "corpusStructure.json").getAbsolutePath());
         JSONArray lasGroups = new JSONObject(lsReturn).getJSONArray("buckets");
 
@@ -649,6 +651,8 @@ public class Corpus {
             JSONObject loJson = new JSONObject(lsResponse);
             if (loJson.has("documentCount"))
                 return loJson.getInt("documentCount");
+            else
+                System.err.println("No document count returned : " + lsResponse);
         }
 
         return null;

@@ -67,6 +67,6 @@ public class QuickConfigTest {
 	public void testDefaultAdminConfig() {
 		QuickConfig loCfg = new QuickConfig();
 
-		assertNotNull(loCfg.getUserCredential(USERTYPE.PacteAdmin).getToken());
+		assertNotNull(loCfg.getToken(loCfg.getUserCredential(USERTYPE.PacteAdmin)));
 	}
 }
