@@ -128,25 +128,34 @@ public class CorpusTest {
     @Test
     public void testImportCorpus() throws IOException, InterruptedException {
         String lsCorpusId = null;
+        String lsNewCorpusId = null;
         Corpus loCorpus = new Corpus(new QuickConfig());
         String lsSourcePath = null;
 
         // Export the corpus before running the test
+        System.out.println("Uploading a corpus sample for the test");
         lsCorpusId = SampleBuilder.smallCorpus(loCorpus);
+        System.out.println("Upload completed, corpus id : " + lsCorpusId);
         lsSourcePath = exportCorpus(loCorpus, lsCorpusId);
+        System.out.println("Exported the corpus to local path : " + lsSourcePath);
 
         assertNotNull(lsSourcePath);
         assertTrue(new File(lsSourcePath).exists());
 
         // The real test
-        lsCorpusId = loCorpus.importCorpus(lsSourcePath);
+        System.out.println("Starting corpus importation from disk...");
+        lsNewCorpusId = loCorpus.importCorpus(lsSourcePath);
+        System.out.println("Corpus importation completed, new corpus id : " + lsNewCorpusId);
 
-        assertNotNull(lsCorpusId);
-        assertNotNull(loCorpus.getCorpusMetadata(lsCorpusId));
-        Thread.sleep(1000); //  
-        assertTrue(loCorpus.getSize(lsCorpusId) >= 2);
+        assertNotNull(lsNewCorpusId);
+        assertNotNull(loCorpus.getCorpusMetadata(lsNewCorpusId));
+        Thread.sleep(1000); //
+        assertTrue(loCorpus.getSize(lsNewCorpusId) >= 2);
 
         // Delete imported corpus after successful test
+        System.out.println("Deleting created corpora..");
+        loCorpus.deleteCorpus(lsNewCorpusId);
         loCorpus.deleteCorpus(lsCorpusId);
+        System.out.println("Deletion completed.");
     }
 }
