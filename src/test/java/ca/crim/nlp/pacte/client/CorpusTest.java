@@ -106,8 +106,7 @@ public class CorpusTest {
         // Only four groups?
 
         // All documents exported?
-        assertEquals(2, new File(lsExportPath, "documents").list().length);
-
+        assertEquals("", 2, new File(lsExportPath, "documents").list().length);
     }
 
     private String exportCorpus(Corpus toCorpus, String tsCorpusId) {

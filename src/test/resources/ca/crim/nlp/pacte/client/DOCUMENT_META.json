@@ -2,6 +2,7 @@
     "$schema": "http://json-schema.org/draft-04/schema#",
     "targetType": "document",
     "schemaType": "DOCUMENT_META",
+    "title": "DOCUMENT_META",
     "type": "object",
     "required": [
         "schemaType",

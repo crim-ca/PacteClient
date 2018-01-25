@@ -176,7 +176,7 @@ public class Corpus {
         loGroupsFolder.mkdirs();
 
         // Download corpus specs and save them
-        writeFile(getCorpusMetadata(tsCorpusId), "corpus.json", tsOutputPath);
+        writeFile(new JSONObject(getCorpusMetadata(tsCorpusId)).toString(4), "corpus.json", tsOutputPath);
 
         // Download the corpus structure and replicate it
         lsReturn = poCfg.getRequest(poCfg.getPacteBackend() + "RACSProxy/corpora/" + tsCorpusId + "/structure",
@@ -608,7 +608,9 @@ public class Corpus {
                 USERTYPE.CustomUser);
 
         if (lsReturn != null && !lsReturn.isEmpty())
-            lsIdDoc = poCfg.getJsonFeature(lsReturn, "id");
+            lsIdDoc = new JSONObject(lsReturn).getString("id");
+        else
+            System.err.println(lsReturn);
 
         return lsIdDoc;
     }
@@ -675,7 +677,9 @@ public class Corpus {
 
         if (lsReturn != null && !lsReturn.isEmpty() && !lsReturn.contains("Not Found:")
                 && !lsReturn.contains("illegal"))
-            lsAnnotId = poCfg.getJsonFeature(lsReturn, "id");
+            lsAnnotId = new JSONObject(lsReturn).getString("id");
+        else
+            System.err.println(lsReturn);
 
         return lsAnnotId;
     }

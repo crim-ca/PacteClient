@@ -30,6 +30,8 @@ public class SampleBuilder {
         String lsTranscodeGroup = null;
         String lsTrancodeSchema = null;
         String lsDocId = null;
+        String lsAnnotationId = null;
+        int lniCptFail = 0;
         lsCorpusId = toCorpus.getCorpusId(UnitTestConstants.TESTCORPUS);
         String lsCurrentTime = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
 
@@ -43,7 +45,17 @@ public class SampleBuilder {
 
         if (lsCorpusId != null) {
             lsTranscodeGroup = toCorpus.getGroupId(UnitTestConstants.TRANSCODEGROUP, lsCorpusId);
-
+            while (lsTranscodeGroup == null && lniCptFail < 10) {
+                pleaseWait();
+                lsTranscodeGroup = toCorpus.getGroupId(UnitTestConstants.TRANSCODEGROUP, lsCorpusId);
+                lniCptFail++;
+            }
+            
+            if (lsTranscodeGroup == null) {
+                System.err.println("Cannot find transcoder group id");
+                return null;
+            }
+            
             // Register schemas
             try {
                 lsTrancodeSchema = new String(
@@ -63,7 +75,7 @@ public class SampleBuilder {
             // Documents and their metadata
             lsDocId = toCorpus.addDocument(lsCorpusId, "bla bla bla", "testExport1", "yep1", "fr_fr");
             pleaseWait();
-            toCorpus.addAnnotation(lsCorpusId, lsTranscodeGroup,
+            lsAnnotationId = toCorpus.addAnnotation(lsCorpusId, lsTranscodeGroup,
                     "{\"document_size\":11,\"source\":\"tamere.zip\",\"file_edit_date\":\"" + lsCurrentTime
                             + "\",\"detectedLanguageProb\":99.99972436012376,"
                             + "\"file_type\":\"text/plain; charset=UTF-8\"," + "\"_documentID\":\"" + lsDocId + "\","
@@ -71,10 +83,12 @@ public class SampleBuilder {
                             + "\"file_name\":\"1.txt\",\"file_encoding\":\"UTF-8\",\"_corpusID\":\"" + lsCorpusId
                             + "\",\"detectedLanguage\":\"fr_FR\"," + "\"file_size\":12,\"file_creation_date\":\""
                             + lsCurrentTime + "\",\"file_extension\":\".txt\"}");
+            if (lsAnnotationId == null)
+                System.err.println("Empty annotation");
 
             lsDocId = toCorpus.addDocument(lsCorpusId, "bli bli bli bli", "testExport2", "yep2", "fr_fr");
             pleaseWait();
-            toCorpus.addAnnotation(lsCorpusId, lsTranscodeGroup,
+            lsAnnotationId = toCorpus.addAnnotation(lsCorpusId, lsTranscodeGroup,
                     "{\"document_size\":15,\"source\":\"tamere.zip\",\"file_edit_date\":\"" + lsCurrentTime
                             + "\",\"detectedLanguageProb\":99.99972436012376,"
                             + "\"file_type\":\"text/plain; charset=UTF-8\"," + "\"_documentID\":\"" + lsDocId + "\","

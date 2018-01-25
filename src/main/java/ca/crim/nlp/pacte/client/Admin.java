@@ -93,10 +93,9 @@ public class Admin {
      */
     public boolean deleteUser(String tsUserId) {
         String lsUsername = null;
-        String lsReturn = null;
-
+        
         // Delete the user
-        lsReturn = poCfg.deleteRequest(poCfg.getPSCUserBackend() + "Users/user/" + tsUserId, USERTYPE.PSCAdmin, null);
+        poCfg.deleteRequest(poCfg.getPSCUserBackend() + "Users/user/" + tsUserId, USERTYPE.PSCAdmin, null);
 
         lsUsername = poCfg.getRequest(poCfg.getPSCUserBackend() + "Users/user/" + tsUserId, USERTYPE.PSCAdmin, null);
         if (new JSONObject(lsUsername).has("username"))
