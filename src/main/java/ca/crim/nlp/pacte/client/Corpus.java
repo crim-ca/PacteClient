@@ -49,8 +49,11 @@ public class Corpus {
 
         // Lire les métadata et recréer le corpus
         lsReturn = readFile(new File(tsCorpusPath, "corpus.json").getAbsolutePath());
-        if (lsReturn == null)
+        if (lsReturn == null) {
+            System.err.println("Missing corpus metadata");
             return null;
+        }
+        
         JSONObject loCorpMeta = new JSONObject(lsReturn);
         lsCorpusOldId = loCorpMeta.getString("id");
         for (int lniCpt = 0; lniCpt < loCorpMeta.getJSONArray("languages").length(); lniCpt++)
@@ -63,8 +66,10 @@ public class Corpus {
         }
 
         // Recréer les groupes et ajouter les schémas
-        if (!(new File(tsCorpusPath, "corpusStructure.json")).exists())
+        if (!(new File(tsCorpusPath, "corpusStructure.json")).exists()) {
+            System.err.println("Corpus structure is missing from exported");
             return null;
+        }
         lsReturn = readFile(new File(tsCorpusPath, "corpusStructure.json").getAbsolutePath());
         JSONArray lasGroups = new JSONObject(lsReturn).getJSONArray("buckets");
 
@@ -140,6 +145,7 @@ public class Corpus {
                 }
             }
         } catch (IOException ex) {
+            System.err.println("Corpus upload failed : " + ex.getMessage());
             return null;
         }
 
