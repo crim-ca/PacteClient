@@ -53,7 +53,7 @@ public class Corpus {
             System.err.println("Missing corpus metadata");
             return null;
         }
-        
+
         JSONObject loCorpMeta = new JSONObject(lsReturn);
         lsCorpusOldId = loCorpMeta.getString("id");
         for (int lniCpt = 0; lniCpt < loCorpMeta.getJSONArray("languages").length(); lniCpt++)
@@ -301,9 +301,9 @@ public class Corpus {
             String lsDoc = "";
 
             if (tbIncludeSourceText)
-                lsDoc = poCfg.getJsonFeature(poCfg.getRequest(
+                lsDoc = new JSONObject(poCfg.getRequest(
                         poCfg.getPacteBackend() + "RACSProxy/corpora/" + tsCorpusId + "/documents/" + loDoc.getID(),
-                        USERTYPE.CustomUser, null), "text");
+                        USERTYPE.CustomUser, null)).getString("text");
 
             // Get each docs/groups annotations
             String lsReturn = getAnnotations(tsCorpusId, loDoc.getID(), tsGroupId + ":" + tsSchemaName);
@@ -396,19 +396,23 @@ public class Corpus {
      */
     public String createCorpus(String tsNomCorpus, String tsLangage) {
         String lsReturn = "";
-        String lsIdCorpus = "";
+        String lsIdCorpus = null;
+        JSONObject loResponse = null;
 
         lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Corpora/corpus",
                 "{\"title\": \"" + tsNomCorpus + "\",\"description\":\""
                         + "\",\"version\":\"\",\"source\":\"\", \"addAllPermissionsOnTranscoderBucketToOwner\":true, \"reference\":\"\",\"languages\":[\""
                         + tsLangage + "\"]}",
                 USERTYPE.CustomUser);
-        if (lsReturn != null && !lsReturn.isEmpty()) {
-            lsIdCorpus = poCfg.getJsonFeature(lsReturn, "id");
+
+        loResponse = new JSONObject(lsReturn);
+
+        if (loResponse.has("id")) {
+            lsIdCorpus = loResponse.getString("id");
             if (poCfg.getVerbose())
                 System.out.println("Corpus " + tsNomCorpus + " (" + lsIdCorpus + ") a été créé!");
-        } else
-            return null;
+        } else if (loResponse.has("message"))
+            System.err.println("Cannot create corpus : " + loResponse.getString("message"));
 
         return lsIdCorpus;
     }
@@ -562,6 +566,7 @@ public class Corpus {
                 if ((tsBucketId == null || tsBucketId == "") && (tsCorpusId == null || tsCorpusId.isEmpty())
                         && loaCorpus.length() == 0)
                     return lsSchemaId;
+                
                 else if (((tsBucketId != null && !tsBucketId.isEmpty())
                         || (tsCorpusId != null || !tsCorpusId.isEmpty())) && loaCorpus.length() > 0) {
                     // Vérifier que la bucket en bien enregistrée
