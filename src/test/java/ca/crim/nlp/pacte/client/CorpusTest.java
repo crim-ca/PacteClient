@@ -96,6 +96,9 @@ public class CorpusTest {
         lsCorpusId = SampleBuilder.smallCorpus(loCorpus);
         assertNotNull(lsCorpusId);
 
+        System.out.println(lsCorpusId);
+        System.out.println(loCorpus.getSize(lsCorpusId));
+
         lsExportPath = exportCorpus(loCorpus, lsCorpusId);
         System.out.println(lsExportPath);
 

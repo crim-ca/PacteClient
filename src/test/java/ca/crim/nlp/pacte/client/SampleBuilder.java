@@ -50,12 +50,12 @@ public class SampleBuilder {
                 lsTranscodeGroup = toCorpus.getGroupId(UnitTestConstants.TRANSCODEGROUP, lsCorpusId);
                 lniCptFail++;
             }
-            
+
             if (lsTranscodeGroup == null) {
                 System.err.println("Cannot find transcoder group id");
                 return null;
             }
-            
+
             // Register schemas
             try {
                 lsTrancodeSchema = new String(
@@ -84,7 +84,7 @@ public class SampleBuilder {
                             + "\",\"detectedLanguage\":\"fr_FR\"," + "\"file_size\":12,\"file_creation_date\":\""
                             + lsCurrentTime + "\",\"file_extension\":\".txt\"}");
             if (lsAnnotationId == null)
-                System.err.println("Empty annotation");
+                System.err.println("Empty annotation 1 ");
 
             lsDocId = toCorpus.addDocument(lsCorpusId, "bli bli bli bli", "testExport2", "yep2", "fr_fr");
             pleaseWait();
@@ -96,6 +96,8 @@ public class SampleBuilder {
                             + "\"file_name\":\"2.txt\",\"file_encoding\":\"UTF-8\",\"_corpusID\":\"" + lsCorpusId
                             + "\",\"detectedLanguage\":\"fr_FR\"," + "\"file_size\":16,\"file_creation_date\":\""
                             + lsCurrentTime + "\",\"file_extension\":\".txt\"}");
+            if (lsAnnotationId == null)
+                System.err.println("Empty annotation 2 ");
 
             // Groups
             toCorpus.createBucket(lsCorpusId, "group1");

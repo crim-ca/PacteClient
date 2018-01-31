@@ -86,4 +86,5 @@ public class AdminTest {
 		loAdmin.deleteUser(loId2.getUserId());
 		assertNull(loAdmin.checkUser(lsUsername2, lsPwd2));
 	}
+	
 }

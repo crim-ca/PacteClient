@@ -329,11 +329,6 @@ public class QuickConfig {
         return lsResponse;
     }
 
-    public String getJsonFeature(String tsJson, String tsFeature) {
-        JSONObject obj = new JSONObject(tsJson);
-        return obj.getString(tsFeature);
-    }
-
     public void setVerbose(boolean tbVerbose) {
         pbVerbose = tbVerbose;
     }
@@ -348,7 +343,7 @@ public class QuickConfig {
      * @return User's token
      */
     public String getToken(Credential toUserCredentials) {
-        String lsReturn = "";
+        String lsReturn = null;
         Calendar ldElapsed = Calendar.getInstance();
         ldElapsed.add(Calendar.HOUR, pniTokenRenewDelay);
 

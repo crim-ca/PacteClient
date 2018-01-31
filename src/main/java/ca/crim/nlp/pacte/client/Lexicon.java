@@ -93,9 +93,10 @@ public class Lexicon {
         // Lancer l'appel
         lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Domains/domain", lsDom, USERTYPE.CustomUser);
 
-        // R�cup�rer l'id
-        if (lsReturn.contains("\"domainId\":"))
-            return poCfg.getJsonFeature(lsReturn, "domainId");
+        // Récupérer l'id
+        JSONObject loRet = new JSONObject(lsReturn);
+        if (loRet.has("\"domainId\":"))
+            return loRet.getString("domainId");
         else
             return null;
     }
@@ -115,8 +116,9 @@ public class Lexicon {
         lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Concepts/concept", lsCon, USERTYPE.CustomUser);
 
         // Récupérer l'id
-        if (lsReturn.contains("\"conceptId\":"))
-            return poCfg.getJsonFeature(lsReturn, "conceptId");
+        JSONObject loRet = new JSONObject(lsReturn);
+        if (loRet.has("\"conceptId\":"))
+            return loRet.getString("conceptId");
         else
             return null;
     }
@@ -156,8 +158,9 @@ public class Lexicon {
         lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Terms/term", lsTerm, USERTYPE.CustomUser);
 
         // Récupérer l'id
-        if (lsReturn.contains("\"id\":"))
-            return poCfg.getJsonFeature(lsReturn, "id");
+        JSONObject loRet = new JSONObject(lsReturn);
+        if (loRet.has("\"id\":"))
+            return loRet.getString("id");
         else
             return null;
     }
