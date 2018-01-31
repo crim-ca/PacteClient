@@ -15,6 +15,7 @@ import ca.crim.nlp.pacte.QuickConfig.USERTYPE;
 import ca.crim.nlp.pacte.UnitTestConstants;
 
 public class SampleBuilder {
+    public static final Integer SmallCorpusSize = 2;
 
     /**
      * Create a small test corpus if it does not already exists.
@@ -35,10 +36,14 @@ public class SampleBuilder {
         lsCorpusId = toCorpus.getCorpusId(UnitTestConstants.TESTCORPUS);
         String lsCurrentTime = LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME);
 
-        // TODO check for corpus integrity before returning existing id
-
+        // Check for corpus integrity before returning existing id
         if (lsCorpusId != null)
-            return lsCorpusId;
+            if (toCorpus.getSize(lsCorpusId) == SmallCorpusSize)
+                return lsCorpusId;
+            else {
+                System.err.println("Deleting corrupted small sample corpus...");
+                toCorpus.deleteCorpus(lsCorpusId);
+            }
 
         // Create the new corpus
         lsCorpusId = toCorpus.createCorpus(UnitTestConstants.TESTCORPUS, "fr_fr,en_en");
@@ -60,7 +65,7 @@ public class SampleBuilder {
             try {
                 lsTrancodeSchema = new String(
                         Files.readAllBytes(Paths.get(
-                                ClassLoader.class.getResource("/ca/crim/nlp/pacte/client/document_meta.json").toURI())),
+                                ClassLoader.class.getResource("/ca/crim/nlp/pacte/client/" + Corpus.DOCMETA).toURI())),
                         Charset.forName("UTF-8"));
             } catch (IOException | URISyntaxException e) {
                 e.printStackTrace();
