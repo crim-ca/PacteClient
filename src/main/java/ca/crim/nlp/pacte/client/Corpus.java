@@ -24,6 +24,8 @@ import ca.crim.nlp.pacte.QuickConfig.USERTYPE;
 
 public class Corpus {
     private QuickConfig poCfg = null;
+    final static String CORPUS_STRUCT_FILE = "CorpusStructure.json";
+    final static String DOCMETA = "DOCUMENT_META.json";
 
     public Corpus(QuickConfig toConfig) {
         poCfg = toConfig;
@@ -66,11 +68,11 @@ public class Corpus {
         }
 
         // Recréer les groupes et ajouter les schémas
-        if (!(new File(tsCorpusPath, "corpusStructure.json")).exists()) {
+        if (!(new File(tsCorpusPath, CORPUS_STRUCT_FILE)).exists()) {
             System.err.println("Corpus structure is missing from exported");
             return null;
         }
-        lsReturn = readFile(new File(tsCorpusPath, "corpusStructure.json").getAbsolutePath());
+        lsReturn = readFile(new File(tsCorpusPath, CORPUS_STRUCT_FILE).getAbsolutePath());
         JSONArray lasGroups = new JSONObject(lsReturn).getJSONArray("buckets");
 
         for (int lniCpt = 0; lniCpt < lasGroups.length(); lniCpt++) {
@@ -90,11 +92,11 @@ public class Corpus {
                 if (loFile.exists())
                     lsSchema = new JSONObject(readFile(loFile.getAbsolutePath())).getJSONObject("schema")
                             .getString("schemaJsonContent");
-                else if (loFile.getName().equalsIgnoreCase("document_meta.schema"))
+                else if (loFile.getName().equalsIgnoreCase(DOCMETA))
                     try {
                         lsSchema = new String(
-                                Files.readAllBytes(Paths.get(ClassLoader.class
-                                        .getResource("/ca/crim/nlp/pacte/client/document_meta.json").toURI())),
+                                Files.readAllBytes(Paths.get(
+                                        ClassLoader.class.getResource("/ca/crim/nlp/pacte/client/" + DOCMETA).toURI())),
                                 Charset.forName("UTF-8"));
                     } catch (IOException | URISyntaxException e) {
                         e.printStackTrace();
@@ -189,7 +191,7 @@ public class Corpus {
                 USERTYPE.CustomUser, null);
         if (lsReturn != null && !lsReturn.isEmpty()) {
             // Save to keep track or group names and schemas
-            writeFile(lsReturn, "CorpusStructure.json", tsOutputPath);
+            writeFile(lsReturn, CORPUS_STRUCT_FILE, tsOutputPath);
 
             JSONObject loRet = new JSONObject(lsReturn);
             for (int lniCpt = 0; lniCpt < loRet.getJSONArray("buckets").length(); lniCpt++) {
@@ -566,7 +568,7 @@ public class Corpus {
                 if ((tsBucketId == null || tsBucketId == "") && (tsCorpusId == null || tsCorpusId.isEmpty())
                         && loaCorpus.length() == 0)
                     return lsSchemaId;
-                
+
                 else if (((tsBucketId != null && !tsBucketId.isEmpty())
                         || (tsCorpusId != null || !tsCorpusId.isEmpty())) && loaCorpus.length() > 0) {
                     // Vérifier que la bucket en bien enregistrée

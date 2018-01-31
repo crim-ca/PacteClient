@@ -152,7 +152,7 @@ public class CorpusTest {
         assertNotNull(lsNewCorpusId);
         assertNotNull(loCorpus.getCorpusMetadata(lsNewCorpusId));
         Thread.sleep(1000); //
-        assertTrue(loCorpus.getSize(lsNewCorpusId) >= 2);
+        assertEquals(SampleBuilder.SmallCorpusSize, loCorpus.getSize(lsNewCorpusId));
 
         // Delete imported corpus after successful test
         System.out.println("Deleting created corpora..");
