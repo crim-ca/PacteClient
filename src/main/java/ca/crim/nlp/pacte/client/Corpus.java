@@ -26,6 +26,7 @@ public class Corpus {
     private QuickConfig poCfg = null;
     final static String CORPUS_STRUCT_FILE = "CorpusStructure.json";
     final static String DOCMETA = "DOCUMENT_META.json";
+    final static String DOCMETASchema = "DOCUMENT_META.schema";
 
     public Corpus(QuickConfig toConfig) {
         poCfg = toConfig;
@@ -92,7 +93,7 @@ public class Corpus {
                 if (loFile.exists())
                     lsSchema = new JSONObject(readFile(loFile.getAbsolutePath())).getJSONObject("schema")
                             .getString("schemaJsonContent");
-                else if (loFile.getName().equalsIgnoreCase(DOCMETA))
+                else if (loFile.getName().equalsIgnoreCase(DOCMETASchema))
                     try {
                         lsSchema = new String(
                                 Files.readAllBytes(Paths.get(
