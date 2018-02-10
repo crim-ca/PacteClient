@@ -502,6 +502,27 @@ public class Corpus {
     }
 
     /**
+     * 
+     * @param tsTagsetDefinition
+     * @return
+     */
+    public String createTagset(String tsTagsetDefinition) {
+        String lsReturn = "";
+        String lsTagset = "{\"tagsetJsonContent\": \"" + tsTagsetDefinition.replaceAll("\"", "\\\\\"") + "\"}";
+        
+        // Ajouter un groupe pertinent
+        lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Tagsets/tagset", lsTagset,
+                USERTYPE.CustomUser);
+
+        if (lsReturn != null && new JSONObject(lsReturn).has("id")) {
+            JSONObject loJson = new JSONObject(lsReturn);
+            return loJson.getString("id");
+        }
+
+        return null;
+    }
+
+    /**
      * Get the JSON definition for a stored tagset.
      * 
      * @param tsTagsetId
@@ -540,11 +561,32 @@ public class Corpus {
         for (int lniCpt = 0; lniCpt < loTagsets.length(); lniCpt++) {
             JSONObject loObj = loTagsets.getJSONObject(lniCpt);
 
-            if (((String) ((JSONObject) loObj.get("Tagset")).get("TagsetType")).equalsIgnoreCase(tsTagsetName))
-                return ((String) ((JSONObject) loObj.get("Tagset")).get("id"));
+            if (new JSONObject(loObj.getString("tagsetJsonContent")).getString("title").equalsIgnoreCase(tsTagsetName))
+                return loObj.getString("id");
         }
 
         return null;
+    }
+
+    /**
+     * Destroy a corpus and everything contained within (documents, groups,
+     * annotations, etc).
+     * 
+     * @param tsIdTagset
+     * @return
+     */
+    public boolean deleteTagset(String tsIdTagset) {
+        String lsReturn = "";
+
+        if (tsIdTagset == null || tsIdTagset.isEmpty())
+            return false;
+
+        lsReturn = poCfg.deleteRequest(poCfg.getPacteBackend() + "Tagsets/tagset/" + tsIdTagset, USERTYPE.CustomUser,
+                null);
+        if (lsReturn != null && lsReturn == "") {
+            return true;
+        }
+        return false;
     }
 
     public String registerSchema(String tsSchema) {

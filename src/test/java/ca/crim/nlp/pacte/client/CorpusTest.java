@@ -161,5 +161,22 @@ public class CorpusTest {
         System.out.println("Deletion completed.");
     }
 
-    
+    @Test
+    public void testTagset() {
+        String lsTagsetId = null;
+        String lsTagsetName = UUID.randomUUID().toString();
+        String lsTagset = "{\"title\":\"" + lsTagsetName +  "\",\"tagset\":[{\"tag\":\"cc\",\"description\":\"dd\"}]}";
+        Corpus loCorpus = new Corpus(new QuickConfig());
+                
+        // Create tagset
+        loCorpus.createTagset(lsTagset);
+        
+        // Retreive it
+        lsTagsetId = loCorpus.getTagsetId(lsTagsetName);
+        assertNotNull(lsTagsetId);
+        
+        // Delete it
+        assertTrue(loCorpus.deleteTagset(lsTagsetId));
+        assertNull(loCorpus.getTagsetId(lsTagsetName));
+    }
 }
