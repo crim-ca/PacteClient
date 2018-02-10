@@ -402,11 +402,10 @@ public class Corpus {
         String lsIdCorpus = null;
         JSONObject loResponse = null;
 
-        lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Corpora/corpus",
-                "{\"title\": \"" + tsNomCorpus + "\",\"description\":\""
-                        + "\",\"version\":\"\",\"source\":\"\", \"addAllPermissionsOnTranscoderBucketToOwner\":true, \"reference\":\"\",\"languages\":[\""
-                        + tsLangage + "\"]}",
-                USERTYPE.CustomUser);
+        lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Corpora/corpus", "{\"title\": \"" + tsNomCorpus
+                + "\",\"description\":\""
+                + "\",\"version\":\"\",\"source\":\"\", \"addAllPermissionsOnTranscoderBucketToOwner\":true, \"reference\":\"\",\"languages\":[\""
+                + tsLangage + "\"]}", USERTYPE.CustomUser);
 
         loResponse = new JSONObject(lsReturn);
 
@@ -497,6 +496,52 @@ public class Corpus {
         if (lsReturn != null && !lsReturn.isEmpty()) {
             JSONObject loJson = new JSONObject(lsReturn);
             return loJson.getString("bucketId");
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the JSON definition for a stored tagset.
+     * 
+     * @param tsTagsetId
+     *            : ID of the required tagset
+     * @return JSON definition
+     */
+    public String getTagset(String tsTagsetId) {
+        String lsTagset = null;
+
+        // Aller chercher le schéma
+        lsTagset = poCfg.getRequest(poCfg.getPacteBackend() + "Tagsets/tagset/" + tsTagsetId, USERTYPE.CustomUser,
+                null);
+
+        if (lsTagset == null || lsTagset.isEmpty())
+            return null;
+        else
+            return lsTagset;
+    }
+
+    /**
+     * Get schema id from name, filtered by corpus and group
+     * 
+     * @param tsSchemaName
+     * @param tsCorpusId
+     * @param tsBucketId
+     * @return
+     */
+    public String getTagsetId(String tsTagsetName) {
+        String lsTagsetList = null;
+        JSONArray loTagsets = null;
+
+        // Aller chercher tous les schémas
+        lsTagsetList = poCfg.getRequest(poCfg.getPacteBackend() + "Tagsets/tagsets", USERTYPE.CustomUser, null);
+        loTagsets = new JSONArray(lsTagsetList);
+
+        for (int lniCpt = 0; lniCpt < loTagsets.length(); lniCpt++) {
+            JSONObject loObj = loTagsets.getJSONObject(lniCpt);
+
+            if (((String) ((JSONObject) loObj.get("Tagset")).get("TagsetType")).equalsIgnoreCase(tsTagsetName))
+                return ((String) ((JSONObject) loObj.get("Tagset")).get("id"));
         }
 
         return null;
