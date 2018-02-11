@@ -1,5 +1,6 @@
 {
 	"title": "Penn Treebank - POS",
+	"description": "Penn treebank part-of-speech tags",
 	"reference": "http://www.comp.leeds.ac.uk/ccalas/tagsets/upenn.html",
 	"tagset": [{"tag": "CC","description": "Coordinating conjunction"},
 {"tag": "CD","description": "Cardinal number"},

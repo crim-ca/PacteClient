@@ -165,7 +165,7 @@ public class CorpusTest {
     public void testTagset() {
         String lsTagsetId = null;
         String lsTagsetName = UUID.randomUUID().toString();
-        String lsTagset = "{\"title\":\"" + lsTagsetName +  "\",\"tagset\":[{\"tag\":\"cc\",\"description\":\"dd\"}]}";
+        String lsTagset = "{\"title\":\"" + lsTagsetName +  "\", \"reference\":\"rr\", \"description\":\"desc\",\"tagset\":[{\"tag\":\"cc\",\"description\":\"dd\"}]}";
         Corpus loCorpus = new Corpus(new QuickConfig());
                 
         // Create tagset

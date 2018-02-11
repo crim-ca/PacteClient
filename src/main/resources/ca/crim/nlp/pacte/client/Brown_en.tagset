@@ -1,5 +1,6 @@
 {
 	"title": "Brown corpus - POS",
+	"description" : "Brown corpus part--of-speech tag",
 	"reference" : "http://clu.uni.no/icame/manuals/",
 	"tagset": [{"tag": ".","description": "sentence (. ; ? *)"},
 {"tag": "(","description": "left paren"},
