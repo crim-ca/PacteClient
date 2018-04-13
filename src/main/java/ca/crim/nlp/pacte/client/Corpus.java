@@ -508,7 +508,7 @@ public class Corpus {
      */
     public String createTagset(String tsTagsetDefinition) {
         String lsReturn = "";
-        String lsTagset = "{\"tagsetJsonContent\": \"" + tsTagsetDefinition.replaceAll("\"", "\\\\\"") + "\"}";
+        String lsTagset = "{\"tagsetJsonContent\": \"" + tsTagsetDefinition.replaceAll("\"", "\\\\\"").replaceAll("\r", "").replaceAll("\n", "") + "\"}";
         
         // Ajouter un groupe pertinent
         lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Tagsets/tagset", lsTagset,
@@ -810,6 +810,29 @@ public class Corpus {
         return null;
     }
 
+    /**
+     * Return the id and name of each annotation group of a corpus
+     * @param tsCorpusId
+     * @return
+     */
+    public Map<String, String> getGroups(String tsCorpusId) {
+        String lsReturn = null;
+        Map<String, String> loGroups = new HashMap<String, String>();
+        
+        // Get structure
+        lsReturn = poCfg.getRequest(poCfg.getPacteBackend() + "RACSProxy/corpora/" + tsCorpusId + "/structure",
+                USERTYPE.CustomUser, null);
+        
+        // parse json
+        JSONArray loGrps = new JSONObject(lsReturn).getJSONArray("buckets"); 
+        for (int lniCpt = 0; lniCpt < loGrps.length(); lniCpt++) {
+            JSONObject loObj = loGrps.getJSONObject(lniCpt);
+            loGroups.put(loObj.getString("id"), loObj.getString("name"));
+        }
+        
+        return loGroups;
+    }
+    
     public String getAnnotations(String tsCorpusId, String tsDocId, String tsSchemaTypes) {
         String lsReturn = "";
         List<NameValuePair> lasParam = new ArrayList<NameValuePair>();
