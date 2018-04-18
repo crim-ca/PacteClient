@@ -164,7 +164,9 @@ public class QuickConfig {
         try {
             loUriBuilder = new URIBuilder(tsTargetEndpoint);
         } catch (URISyntaxException e1) {
-            e1.printStackTrace();
+            if (pbVerbose)
+                e1.printStackTrace();
+            return null;
         }
 
         if (toParams != null)

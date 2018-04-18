@@ -30,9 +30,9 @@ public class Demo {
         Corpus loCorpus = new Corpus(poCfg);
 
         if (tbTagset) {
-            for (File loF : getResources("/ca/crim/nlp/pacte/client"))
+            for (File loF : getResources("ca/crim/nlp/pacte/client"))
                 if (loF.getName().endsWith(".tagset"))
-                    loCorpus.createTagset(readFile(loF));
+                    System.out.println(loCorpus.createTagset(readFile(loF)));
         }
 
         return true;

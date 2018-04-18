@@ -46,7 +46,7 @@ public class SampleBuilder {
             }
 
         // Create the new corpus
-        lsCorpusId = toCorpus.createCorpus(UnitTestConstants.TESTCORPUS, "fr_fr,en_en");
+        lsCorpusId = toCorpus.createCorpus(UnitTestConstants.TESTCORPUS, "fr-fr,en-en");
 
         if (lsCorpusId != null) {
             lsTranscodeGroup = toCorpus.getGroupId(UnitTestConstants.TRANSCODEGROUP, lsCorpusId);
@@ -78,28 +78,28 @@ public class SampleBuilder {
             toCorpus.copySchemaToGroup(lsSchemaId, lsCorpusId, lsTranscodeGroup);
 
             // Documents and their metadata
-            lsDocId = toCorpus.addDocument(lsCorpusId, "bla bla bla", "testExport1", "yep1", "fr_fr");
+            lsDocId = toCorpus.addDocument(lsCorpusId, "bla bla bla", "testExport1", "yep1", "fr-fr");
             pleaseWait();
             lsAnnotationId = toCorpus.addAnnotation(lsCorpusId, lsTranscodeGroup,
                     "{\"document_size\":11,\"source\":\"tamere.zip\",\"file_edit_date\":\"" + lsCurrentTime
                             + "\",\"detectedLanguageProb\":99.99972436012376,"
                             + "\"file_type\":\"text/plain; charset=UTF-8\"," + "\"_documentID\":\"" + lsDocId + "\","
-                            + "\"file_path\":\"/\",\"indexedLanguage\":\"fr_FR\",\"schemaType\":\"DOCUMENT_META\","
+                            + "\"file_path\":\"/\",\"indexedLanguage\":\"fr-fr\",\"schemaType\":\"DOCUMENT_META\","
                             + "\"file_name\":\"1.txt\",\"file_encoding\":\"UTF-8\",\"_corpusID\":\"" + lsCorpusId
-                            + "\",\"detectedLanguage\":\"fr_FR\"," + "\"file_size\":12,\"file_creation_date\":\""
+                            + "\",\"detectedLanguage\":\"fr-fr\"," + "\"file_size\":12,\"file_creation_date\":\""
                             + lsCurrentTime + "\",\"file_extension\":\".txt\"}");
             if (lsAnnotationId == null)
                 System.err.println("Empty annotation 1 ");
 
-            lsDocId = toCorpus.addDocument(lsCorpusId, "bli bli bli bli", "testExport2", "yep2", "fr_fr");
+            lsDocId = toCorpus.addDocument(lsCorpusId, "bli bli bli bli", "testExport2", "yep2", "fr-fr");
             pleaseWait();
             lsAnnotationId = toCorpus.addAnnotation(lsCorpusId, lsTranscodeGroup,
                     "{\"document_size\":15,\"source\":\"tamere.zip\",\"file_edit_date\":\"" + lsCurrentTime
                             + "\",\"detectedLanguageProb\":99.99972436012376,"
                             + "\"file_type\":\"text/plain; charset=UTF-8\"," + "\"_documentID\":\"" + lsDocId + "\","
-                            + "\"file_path\":\"/\",\"indexedLanguage\":\"fr_FR\",\"schemaType\":\"DOCUMENT_META\","
+                            + "\"file_path\":\"/\",\"indexedLanguage\":\"fr-fr\",\"schemaType\":\"DOCUMENT_META\","
                             + "\"file_name\":\"2.txt\",\"file_encoding\":\"UTF-8\",\"_corpusID\":\"" + lsCorpusId
-                            + "\",\"detectedLanguage\":\"fr_FR\"," + "\"file_size\":16,\"file_creation_date\":\""
+                            + "\",\"detectedLanguage\":\"fr-fr\"," + "\"file_size\":16,\"file_creation_date\":\""
                             + lsCurrentTime + "\",\"file_extension\":\".txt\"}");
             if (lsAnnotationId == null)
                 System.err.println("Empty annotation 2 ");

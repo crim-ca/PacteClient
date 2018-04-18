@@ -20,7 +20,7 @@
 {"tag": "PDT","description": "Predeterminer"},
 {"tag": "POS","description": "Possessive ending"},
 {"tag": "PRP","description": "Personal pronoun"},
-{"tag": "PRP$","description": "Possessive pronoun"},
+{"tag": "PRP_","description": "Possessive pronoun"},
 {"tag": "RB","description": "Adverb"},
 {"tag": "RBR","description": "Adverb, comparative"},
 {"tag": "RBS","description": "Adverb, superlative"},
@@ -36,10 +36,6 @@
 {"tag": "VBZ","description": "Verb, 3rd person singular present"},
 {"tag": "WDT","description": "Wh-determiner"},
 {"tag": "WP","description": "Wh-pronoun"},
-{"tag": "WP$","description": "Possessive wh-pronoun"},
+{"tag": "WP_","description": "Possessive wh-pronoun"},
 {"tag": "WRB","description": "Wh-adverb"}]
 }
-
-  
-
-

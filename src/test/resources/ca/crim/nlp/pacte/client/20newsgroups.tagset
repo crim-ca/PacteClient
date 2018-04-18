@@ -1,7 +1,7 @@
 {
 	"title": "20 newsgroups",
-	"description" : "Classification des vingt groupes de nouvelles.",
-	"reference" : "https://archive.ics.uci.edu/ml/datasets/Twenty+Newsgroups",
+	"description": "Classification des vingt groupes de nouvelles.",
+	"reference": "https://archive.ics.uci.edu/ml/datasets/Twenty+Newsgroups",
 	"tagset": [
 	{"tag": "graphics","description": "comp.graphics"},
 {"tag": "os.ms-windows.misc","description": "comp.os.ms-windows.misc"},
@@ -25,24 +25,3 @@
 {"tag": "atheism","description": "alt.atheism"},
 {"tag": "christian","description": "coosoc.religion.christian"}]
 }
-
-
-
-
-
-	
-
-
-
-	
-
-
-
-
-	
-
-
-	
-
-
-
