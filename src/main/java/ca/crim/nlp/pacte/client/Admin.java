@@ -125,7 +125,8 @@ public class Admin {
         if (lsReturn != null && !lsReturn.isEmpty() && !lsReturn.contains("Forbidden")
                 && !lsReturn.contains("Unauthorized")) {
             JSONObject loJson = new JSONObject(lsReturn);
-            System.out.println("Utilisateur " + loJson.getJSONObject("user").getString("userProfileId") + " existant.");
+            if (poCfg.getVerbose())
+                System.out.println("Utilisateur " + loJson.getJSONObject("user").getString("userProfileId") + " existant.");
             return loJson.getJSONObject("user").getString("userProfileId");
         } else
             return null;

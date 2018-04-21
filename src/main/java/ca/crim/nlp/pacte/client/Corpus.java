@@ -402,11 +402,10 @@ public class Corpus {
         String lsIdCorpus = null;
         JSONObject loResponse = null;
 
-        lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Corpora/corpus",
-                "{\"title\": \"" + tsNomCorpus + "\",\"description\":\""
-                        + "\",\"version\":\"\",\"source\":\"\", \"addAllPermissionsOnTranscoderBucketToOwner\":true, \"reference\":\"\",\"languages\":[\""
-                        + tsLangage + "\"]}",
-                USERTYPE.CustomUser);
+        lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Corpora/corpus", "{\"title\": \"" + tsNomCorpus
+                + "\",\"description\":\""
+                + "\",\"version\":\"\",\"source\":\"\", \"addAllPermissionsOnTranscoderBucketToOwner\":true, \"reference\":\"\",\"languages\":[\""
+                + tsLangage + "\"]}", USERTYPE.CustomUser);
 
         loResponse = new JSONObject(lsReturn);
 
@@ -500,6 +499,94 @@ public class Corpus {
         }
 
         return null;
+    }
+
+    /**
+     * 
+     * @param tsTagsetDefinition
+     * @return
+     */
+    public String createTagset(String tsTagsetDefinition) {
+        String lsReturn = "";
+        String lsTagset = "{\"tagsetJsonContent\": \"" + tsTagsetDefinition.replaceAll("\"", "\\\\\"").replaceAll("\r", "").replaceAll("\n", "") + "\"}";
+        
+        // Ajouter un groupe pertinent
+        lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Tagsets/tagset", lsTagset,
+                USERTYPE.CustomUser);
+
+        if (lsReturn != null && new JSONObject(lsReturn).has("id")) {
+            JSONObject loJson = new JSONObject(lsReturn);
+            return loJson.getString("id");
+        }
+
+        return null;
+    }
+
+    /**
+     * Get the JSON definition for a stored tagset.
+     * 
+     * @param tsTagsetId
+     *            : ID of the required tagset
+     * @return JSON definition
+     */
+    public String getTagset(String tsTagsetId) {
+        String lsTagset = null;
+
+        // Aller chercher le schéma
+        lsTagset = poCfg.getRequest(poCfg.getPacteBackend() + "Tagsets/tagset/" + tsTagsetId, USERTYPE.CustomUser,
+                null);
+
+        if (lsTagset == null || lsTagset.isEmpty())
+            return null;
+        else
+            return lsTagset;
+    }
+
+    /**
+     * Get schema id from name, filtered by corpus and group
+     * 
+     * @param tsSchemaName
+     * @param tsCorpusId
+     * @param tsBucketId
+     * @return
+     */
+    public String getTagsetId(String tsTagsetName) {
+        String lsTagsetList = null;
+        JSONArray loTagsets = null;
+
+        // Aller chercher tous les schémas
+        lsTagsetList = poCfg.getRequest(poCfg.getPacteBackend() + "Tagsets/tagsets", USERTYPE.CustomUser, null);
+        loTagsets = new JSONArray(lsTagsetList);
+
+        for (int lniCpt = 0; lniCpt < loTagsets.length(); lniCpt++) {
+            JSONObject loObj = loTagsets.getJSONObject(lniCpt);
+
+            if (new JSONObject(loObj.getString("tagsetJsonContent")).getString("title").equalsIgnoreCase(tsTagsetName))
+                return loObj.getString("id");
+        }
+
+        return null;
+    }
+
+    /**
+     * Destroy a corpus and everything contained within (documents, groups,
+     * annotations, etc).
+     * 
+     * @param tsIdTagset
+     * @return
+     */
+    public boolean deleteTagset(String tsIdTagset) {
+        String lsReturn = "";
+
+        if (tsIdTagset == null || tsIdTagset.isEmpty())
+            return false;
+
+        lsReturn = poCfg.deleteRequest(poCfg.getPacteBackend() + "Tagsets/tagset/" + tsIdTagset, USERTYPE.CustomUser,
+                null);
+        if (lsReturn != null && lsReturn == "") {
+            return true;
+        }
+        return false;
     }
 
     public String registerSchema(String tsSchema) {
@@ -723,6 +810,29 @@ public class Corpus {
         return null;
     }
 
+    /**
+     * Return the id and name of each annotation group of a corpus
+     * @param tsCorpusId
+     * @return
+     */
+    public Map<String, String> getGroups(String tsCorpusId) {
+        String lsReturn = null;
+        Map<String, String> loGroups = new HashMap<String, String>();
+        
+        // Get structure
+        lsReturn = poCfg.getRequest(poCfg.getPacteBackend() + "RACSProxy/corpora/" + tsCorpusId + "/structure",
+                USERTYPE.CustomUser, null);
+        
+        // parse json
+        JSONArray loGrps = new JSONObject(lsReturn).getJSONArray("buckets"); 
+        for (int lniCpt = 0; lniCpt < loGrps.length(); lniCpt++) {
+            JSONObject loObj = loGrps.getJSONObject(lniCpt);
+            loGroups.put(loObj.getString("id"), loObj.getString("name"));
+        }
+        
+        return loGroups;
+    }
+    
     public String getAnnotations(String tsCorpusId, String tsDocId, String tsSchemaTypes) {
         String lsReturn = "";
         List<NameValuePair> lasParam = new ArrayList<NameValuePair>();

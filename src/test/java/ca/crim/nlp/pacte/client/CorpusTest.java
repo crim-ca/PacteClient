@@ -45,7 +45,7 @@ public class CorpusTest {
 
         // Create the corpus
         System.out.print("Creating new corpus... ");
-        lsReturn = loCorpus.createCorpus(lsNewCorpusName, "fr_fr");
+        lsReturn = loCorpus.createCorpus(lsNewCorpusName, "fr-fr");
         if (lsReturn != null && !lsReturn.isEmpty())
             lsCorpusID = lsReturn;
         assertNotNull(lsCorpusID);
@@ -53,7 +53,7 @@ public class CorpusTest {
 
         // Populate
         System.out.print("Adding document... ");
-        lsDociID = loCorpus.addDocument(lsCorpusID, "bla bla bla", "bla", "none", "fr_fr");
+        lsDociID = loCorpus.addDocument(lsCorpusID, "bla bla bla", "bla", "none", "fr-fr");
         assertNotNull(lsDociID);
         System.out.println("Added!");
 
@@ -159,5 +159,24 @@ public class CorpusTest {
         loCorpus.deleteCorpus(lsNewCorpusId);
         loCorpus.deleteCorpus(lsCorpusId);
         System.out.println("Deletion completed.");
+    }
+
+    @Test
+    public void testTagset() {
+        String lsTagsetId = null;
+        String lsTagsetName = UUID.randomUUID().toString();
+        String lsTagset = "{\"title\":\"" + lsTagsetName +  "\", \"reference\":\"rr\", \"description\":\"desc\",\"tagset\":[{\"tag\":\"cc\",\"description\":\"dd\"}]}";
+        Corpus loCorpus = new Corpus(new QuickConfig());
+                
+        // Create tagset
+        loCorpus.createTagset(lsTagset);
+        
+        // Retreive it
+        lsTagsetId = loCorpus.getTagsetId(lsTagsetName);
+        assertNotNull(lsTagsetId);
+        
+        // Delete it
+        assertTrue(loCorpus.deleteTagset(lsTagsetId));
+        assertNull(loCorpus.getTagsetId(lsTagsetName));
     }
 }

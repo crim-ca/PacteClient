@@ -95,7 +95,7 @@ public class Lexicon {
 
         // Récupérer l'id
         JSONObject loRet = new JSONObject(lsReturn);
-        if (loRet.has("\"domainId\":"))
+        if (loRet.has("domainId"))
             return loRet.getString("domainId");
         else
             return null;
@@ -117,7 +117,7 @@ public class Lexicon {
 
         // Récupérer l'id
         JSONObject loRet = new JSONObject(lsReturn);
-        if (loRet.has("\"conceptId\":"))
+        if (loRet.has("conceptId"))
             return loRet.getString("conceptId");
         else
             return null;
@@ -159,7 +159,7 @@ public class Lexicon {
 
         // Récupérer l'id
         JSONObject loRet = new JSONObject(lsReturn);
-        if (loRet.has("\"id\":"))
+        if (loRet.has("id"))
             return loRet.getString("id");
         else
             return null;

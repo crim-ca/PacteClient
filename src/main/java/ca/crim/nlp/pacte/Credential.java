@@ -17,14 +17,14 @@ public class Credential {
         psPassword = tsPassword;
     }
 
-    public Credential(String tsUserId,String tsUsername, String tsPassword, String tsPrenom, String tsNom) {
+    public Credential(String tsUserId, String tsUsername, String tsPassword, String tsPrenom, String tsNom) {
         psUsername = tsUsername;
         psPassword = tsPassword;
         psUserId = tsUserId;
         psNom = tsNom;
         psPrenom = tsPrenom;
     }
-    
+
     public Credential(String tsUserId, String tsUserProfileId, String tsUsername, String tsPassword) {
         psUsername = tsUsername;
         psPassword = tsPassword;
@@ -37,11 +37,11 @@ public class Credential {
     }
 
     public String getName() {
-        return psNom;
+        return psPrenom;
     }
 
     public String getSurname() {
-        return psPrenom;
+        return psNom;
     }
 
     public String getPassword() {
