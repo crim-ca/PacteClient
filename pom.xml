@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>ca.crim.nlp.pacte</groupId>
   <artifactId>PacteClient</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.1.0</version>
   
   <name>Pacteclient</name>
   <description>Client java pour faciliter l'accès à l'api REST de la plateforme d'annotation Pacte du CRIM.
