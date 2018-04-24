@@ -47,7 +47,7 @@ public class QuickConfigTest {
 	public void testCredentials() {
 		QuickConfig loCfg = null;
 
-		loCfg = new QuickConfig("https://", "1", "2", "3", "4", "5", "6", false, 1);
+		loCfg = new QuickConfig("https://", "1", "2", "3", "4", "5", "6", false, 1, "");
 
 		assertNotNull(loCfg.poCred.get(USERTYPE.CustomUser));
 		assertNotNull(loCfg.poCred.get(USERTYPE.PacteAdmin));
