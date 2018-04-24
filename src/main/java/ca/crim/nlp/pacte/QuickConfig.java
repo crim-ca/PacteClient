@@ -28,6 +28,7 @@ public class QuickConfig {
     String psBaseURLAuthen = "";
     String psBaseURLPacteBE = "";
     String psBaseURLPSCUser = "";
+    String psBaseURLService = "";
     Integer pniTokenRenewDelay = -12;
 
     private boolean pbVerbose = true;
@@ -44,15 +45,16 @@ public class QuickConfig {
     public QuickConfig() {
         String[] lasConfig = readConfiguration();
         setConfig(lasConfig[0], lasConfig[1], lasConfig[2], lasConfig[3], lasConfig[4], lasConfig[5], lasConfig[6],
-                Boolean.parseBoolean(lasConfig[7]), Integer.parseInt(lasConfig[8]));
+                Boolean.parseBoolean(lasConfig[7]), Integer.parseInt(lasConfig[8]), lasConfig[9]);
     }
 
     private void setConfig(String tsBasePacteUrl, String tsAdminPSCUsername, String tsAdminPSCPassword,
             String tsAdminPacteUsername, String tsAdminPactePassword, String tsCustomUser, String tsCustomPassword,
-            boolean tbVerbose, int tniTokenRenewDelay) {
+            boolean tbVerbose, int tniTokenRenewDelay, String tsServiceUrl) {
         psBaseURLAuthen = tsBasePacteUrl.endsWith("/") ? tsBasePacteUrl : tsBasePacteUrl + "/";
         psBaseURLPacteBE = psBaseURLAuthen + "pacte-backend/";
         psBaseURLPSCUser = psBaseURLAuthen + "psc-users-permissions-management/";
+        psBaseURLService = tsServiceUrl.endsWith("/") ? tsServiceUrl : tsServiceUrl + "/";
         pniTokenRenewDelay = tniTokenRenewDelay;
         pbVerbose = tbVerbose;
 
@@ -84,12 +86,12 @@ public class QuickConfig {
      */
     public QuickConfig(String tsBasePacteUrl, String tsAdminPSCUsername, String tsAdminPSCPassword,
             String tsAdminPacteUsername, String tsAdminPactePassword, String tsCustomUser, String tsCustomPassword,
-            boolean tbVerbose, int tniTokenRenewDelay) {
+            boolean tbVerbose, int tniTokenRenewDelay, String tsServiceUrl) {
         if (tsBasePacteUrl == null || tsBasePacteUrl.isEmpty())
             throw new IllegalArgumentException("PACTE url should not be null");
 
         setConfig(tsBasePacteUrl, tsAdminPSCUsername, tsAdminPSCPassword, tsAdminPacteUsername, tsAdminPactePassword,
-                tsCustomUser, tsCustomPassword, tbVerbose, tniTokenRenewDelay);
+                tsCustomUser, tsCustomPassword, tbVerbose, tniTokenRenewDelay, tsServiceUrl);
     }
 
     /**
@@ -112,8 +114,10 @@ public class QuickConfig {
         if (tsCustomUser == null || tsCustomUser.isEmpty())
             throw new IllegalArgumentException("Username should not be null");
 
-        setConfig(tsBasePacteUrl, null, null, null, null, tsCustomUser, tsCustomPassword, tbVerbose,
-                tniTokenRenewDelay);
+        String[] lasConfig = readConfiguration();
+
+        setConfig(tsBasePacteUrl, null, null, null, null, tsCustomUser, tsCustomPassword, tbVerbose, tniTokenRenewDelay,
+                lasConfig[9]);
     }
 
     public void setCustomUser(String tsUsername, String tsPassword) {
@@ -135,6 +139,14 @@ public class QuickConfig {
      */
     public void setAuthenUrl(String tsUrl) {
         psBaseURLAuthen = tsUrl.endsWith("/") ? tsUrl : tsUrl + "/";
+    }
+
+    public void setServiceUrl(String tsServiceUrl) {
+        psBaseURLService = tsServiceUrl.endsWith("/") ? tsServiceUrl : tsServiceUrl + "/";
+    }
+
+    public String getServiceUrl() {
+        return psBaseURLService;
     }
 
     public String getAuthenUrl() {
@@ -173,8 +185,11 @@ public class QuickConfig {
             loUriBuilder.addParameters(toParams);
 
         HttpGet loGet = new HttpGet(loUriBuilder.toString());
-        loGet.addHeader("Authorization", "Bearer " + getToken(poCred.get(toUsertype)));
-        loGet.addHeader("AuthorizationAudience", "Pacte");
+
+        if (toUsertype != null) {
+            loGet.addHeader("Authorization", "Bearer " + getToken(poCred.get(toUsertype)));
+            loGet.addHeader("AuthorizationAudience", "Pacte");
+        }
 
         try {
             CloseableHttpResponse response = httpclient.execute(loGet);
@@ -215,8 +230,11 @@ public class QuickConfig {
             loUriBuilder.addParameters(toParams);
 
         HttpDelete loDel = new HttpDelete(tsTargetEndpoint);
-        loDel.addHeader("Authorization", "Bearer " + getToken(poCred.get(toUsertype)));
-        loDel.addHeader("AuthorizationAudience", "Pacte");
+
+        if (toUsertype != null) {
+            loDel.addHeader("Authorization", "Bearer " + getToken(poCred.get(toUsertype)));
+            loDel.addHeader("AuthorizationAudience", "Pacte");
+        }
 
         try {
             CloseableHttpResponse response = httpclient.execute(loDel);
@@ -306,8 +324,10 @@ public class QuickConfig {
             httput.setHeader("Accept", "application/json");
         }
 
-        httput.setHeader("Authorization", "Bearer " + getToken(poCred.get(toUsertype)));
-        httput.setHeader("AuthorizationAudience", "Pacte");
+        if (toUsertype != null) {
+            httput.setHeader("Authorization", "Bearer " + getToken(poCred.get(toUsertype)));
+            httput.setHeader("AuthorizationAudience", "Pacte");
+        }
 
         // Executing the request.
         try {
@@ -391,7 +411,7 @@ public class QuickConfig {
     private String[] readConfiguration() {
         Properties prop = new Properties();
         InputStream input = null;
-        String[] lasConfig = new String[9];
+        String[] lasConfig = new String[10];
 
         try {
             input = ClassLoader.class.getResourceAsStream("/ca/crim/nlp/pacte/config.properties");
@@ -409,6 +429,7 @@ public class QuickConfig {
             lasConfig[6] = prop.getProperty("StandardUserPwd");
             lasConfig[7] = prop.getProperty("Verbose");
             lasConfig[8] = prop.getProperty("TokenRenewDelay");
+            lasConfig[9] = prop.getProperty("ServiceUrl");
 
         } catch (IOException ex) {
             ex.printStackTrace();
