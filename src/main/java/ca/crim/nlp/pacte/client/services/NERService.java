@@ -2,6 +2,7 @@ package ca.crim.nlp.pacte.client.services;
 
 import java.security.InvalidParameterException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.json.JSONArray;
@@ -21,7 +22,7 @@ public class NERService implements iServices {
     String psReportUrl = null;
     String psSchemaUpload = null;
     String psAnnotationUploadUrl = null;
-    String psLabels = null;
+    List<String> psLabels = null;
     Map<String, String> poParams = new HashMap<String, String>();
     String psLastUUID = null;
     final String SERVICENAME = "pacte_semantic";
@@ -46,7 +47,7 @@ public class NERService implements iServices {
      */
     public boolean setOptions(String tsCorpusId, String tsDocUrl, String tsModelName, boolean tbDoLinking,
             LINKING_METHOD tsLinkingMethod, String tsReportUrl, String tsAnnotationUploadUrl, String tsSchemaUploadUrl,
-            String tsLabels, Map<String, String> tasCustomParams) {
+            List<String> tsLabels, Map<String, String> tasCustomParams) {
         psCorpusId = tsCorpusId;
         psDocUrl = tsDocUrl;
         psModel = tsModelName;
@@ -83,7 +84,8 @@ public class NERService implements iServices {
         loJ.put("annot_out_url", psAnnotationUploadUrl);
         loJ.put("corpus_id", psCorpusId);
         JSONArray loLabel = new JSONArray();
-        loLabel.put(psLabels);
+        for (String lsVal : psLabels)
+            loLabel.put(lsVal);
         loJ.put("labels", loLabel);
         loJ.put("linking", pbDoLinking);
         loJ.put("linking_method", psLinkingMethod);
@@ -121,8 +123,7 @@ public class NERService implements iServices {
     public String checkStatus(String tsUUID) {
         String lsResponse = null;
 
-        lsResponse = poConfig.getRequest(poConfig.getServiceUrl() + SERVICENAME + "/status?uuid=" + tsUUID,
-                null, null);
+        lsResponse = poConfig.getRequest(poConfig.getServiceUrl() + SERVICENAME + "/status?uuid=" + tsUUID, null, null);
 
         return lsResponse;
     }
