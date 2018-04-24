@@ -9,7 +9,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import ca.crim.nlp.pacte.QuickConfig;
-import ca.crim.nlp.pacte.QuickConfig.USERTYPE;
 
 public class NERService implements iServices {
     QuickConfig poConfig = null;
