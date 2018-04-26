@@ -24,7 +24,6 @@ Java client facilitating access to CRIM Pacte's REST api.
 
 	<scm>
 		<url>https://github.com/crim-ca/PacteClient</url>
-		<developerConnection>pa-crim</developerConnection>
 	</scm>
 
 	<properties>
