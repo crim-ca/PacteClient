@@ -1,54 +1,71 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>ca.crim.nlp.pacte</groupId>
-  <artifactId>PacteClient</artifactId>
-  <version>0.1.0</version>
-  
-  <name>Pacteclient</name>
-  <description>Client java pour faciliter l'accès à l'api REST de la plateforme d'annotation Pacte du CRIM.
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<groupId>ca.crim.nlp.pacte</groupId>
+	<artifactId>PacteClient</artifactId>
+	<version>0.1.1</version>
+	<packaging>jar</packaging>
+
+	<name>Pacteclient</name>
+	<description>Client java pour faciliter l'accès à l'api REST de la plateforme d'annotation Pacte du CRIM.
 
 Java client facilitating access to CRIM Pacte's REST api.
 </description>
-  <properties>
-  	<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  	<project.reporting.sourceEncoding>UTF-8</project.reporting.sourceEncoding>
-  </properties>
-  <organization>
-  	<name>Centre de recherche informatique de Montréal</name>
-  	<url>http://www.crim.ca</url>
-  </organization>
-  <url>http://pacte.crim.ca</url>
-  
-  <build>
-    <sourceDirectory>src\main\java</sourceDirectory>
-    <plugins>
-      <plugin>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.5.1</version>
-        <configuration>
-          <source>1.8</source>
-          <target>1.8</target>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-  
-  <dependencies>
-  	<dependency>
-  		<groupId>org.apache.httpcomponents</groupId>
-  		<artifactId>httpclient</artifactId>
-  		<version>4.5.4</version>
-  	</dependency>
-  	<dependency>
-  		<groupId>org.json</groupId>
-  		<artifactId>json</artifactId>
-  		<version>20141113</version>
-  	</dependency>
+	<url>http://pacte.crim.ca</url>
 
-  	<dependency>
-  		<groupId>junit</groupId>
-  		<artifactId>junit</artifactId>
-  		<version>4.12</version>
-  	</dependency>
-  </dependencies>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<scm>
+		<url>https://github.com/crim-ca/PacteClient</url>
+		<developerConnection>pa-crim</developerConnection>
+	</scm>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.sourceEncoding>UTF-8</project.reporting.sourceEncoding>
+	</properties>
+	<organization>
+		<name>Centre de recherche informatique de Montréal</name>
+		<url>http://www.crim.ca</url>
+	</organization>
+
+	<build>
+		<sourceDirectory>src\main\java</sourceDirectory>
+		<plugins>
+			<plugin>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>3.5.1</version>
+				<configuration>
+					<source>1.8</source>
+					<target>1.8</target>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>4.5.4</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20141113</version>
+		</dependency>
+
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.12</version>
+		</dependency>
+	</dependencies>
 </project>
