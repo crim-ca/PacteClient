@@ -128,13 +128,10 @@ public class Corpus {
                     if (!loAnnotFile.exists())
                         continue;
                     String lsAnnot = readFile(loAnnotFile.getAbsolutePath());
-                    JSONObject loAnnots = new JSONObject(lsAnnot);
-                    if (loAnnots.isNull(lsCorpusOldId))
-                        continue;
-                    loAnnots = loAnnots.getJSONObject(lsCorpusOldId).getJSONObject(lsGroup);
 
-                    for (int lniCpt = 0; lniCpt < loAnnots.names().length(); lniCpt++) {
-                        JSONArray loAnnotations = loAnnots.getJSONArray(loAnnots.names().get(lniCpt).toString());
+                    if (lsAnnot.startsWith("[")) {
+                        JSONArray loAnnotations = null;
+                        loAnnotations = new JSONArray(lsAnnot);
                         for (int lniCptAnn = 0; lniCptAnn < loAnnotations.length(); lniCptAnn++) {
                             JSONObject loAnn = loAnnotations.getJSONObject(lniCptAnn);
                             loAnn.remove("annotationId");
@@ -142,9 +139,43 @@ public class Corpus {
                             loAnn.put("_corpusID", lsCorpusNewId);
                             loAnn.remove("_documentID");
                             loAnn.put("_documentID", lsDocId);
-                            addAnnotation(lsCorpusNewId, laoGroups.get(lsGroup), loAnn.toString());
+
+                            // Contracter les nom de domaine
+                            if (loAnn.has("domainName")) {
+                                String lsDom = loAnn.getString("domainName").replaceAll("\\s+", "");
+                                loAnn.remove("domainName");
+                                loAnn.put("domainName", lsDom);
+                            }
+
+                            if (loAnn.has("domainScore")) {
+                                Double lndScore = (Double) loAnn.get("domainScore");
+                                if (lndScore >= 0.0001)
+                                    addAnnotation(lsCorpusNewId, laoGroups.get(lsGroup), loAnn.toString());
+                            } else
+
+                                addAnnotation(lsCorpusNewId, laoGroups.get(lsGroup), loAnn.toString());
+                        }
+
+                    } else {
+                        JSONObject loAnnots = new JSONObject(lsAnnot);
+                        if (loAnnots.isNull(lsCorpusOldId))
+                            continue;
+                        loAnnots = loAnnots.getJSONObject(lsCorpusOldId).getJSONObject(lsGroup);
+
+                        for (int lniCpt = 0; lniCpt < loAnnots.names().length(); lniCpt++) {
+                            JSONArray loAnnotations = loAnnots.getJSONArray(loAnnots.names().get(lniCpt).toString());
+                            for (int lniCptAnn = 0; lniCptAnn < loAnnotations.length(); lniCptAnn++) {
+                                JSONObject loAnn = loAnnotations.getJSONObject(lniCptAnn);
+                                loAnn.remove("annotationId");
+                                loAnn.remove("_corpusID");
+                                loAnn.put("_corpusID", lsCorpusNewId);
+                                loAnn.remove("_documentID");
+                                loAnn.put("_documentID", lsDocId);
+                                addAnnotation(lsCorpusNewId, laoGroups.get(lsGroup), loAnn.toString());
+                            }
                         }
                     }
+
                 }
             }
         } catch (IOException ex) {
@@ -372,17 +403,16 @@ public class Corpus {
      * @return
      */
     public String getCorpusId(String tsNomCorpus) {
-        String lsIdCorpus = "";
         String lsReturn = "";
 
         lsReturn = poCfg.getRequest(poCfg.getPacteBackend() + "Corpora/corpora", USERTYPE.CustomUser, null);
         if (lsReturn != null && !lsReturn.isEmpty()) {
-            int lniPos = lsReturn.toLowerCase().indexOf("\"title\":\"" + tsNomCorpus.toLowerCase() + "\"");
-            if (lniPos >= 0) {
-                lniPos = lsReturn.substring(0, lniPos).lastIndexOf("\"id\":\"") + 6;
-                lsIdCorpus = lsReturn.substring(lniPos, lniPos + 36);
-                System.out.println("Corpus " + tsNomCorpus + " (" + lsIdCorpus + ") a été trouvé!");
-                return lsIdCorpus;
+            JSONArray loCorpora = new JSONArray(lsReturn);
+            for (int lniCpt = 0; lniCpt < loCorpora.length(); lniCpt++) {
+                JSONObject loCorpus = loCorpora.getJSONObject(lniCpt);
+                if (loCorpus.has("title"))
+                    if (loCorpus.getString("title").equalsIgnoreCase(tsNomCorpus))
+                        return loCorpus.getString("id");
             }
         }
         return null;
@@ -508,11 +538,11 @@ public class Corpus {
      */
     public String createTagset(String tsTagsetDefinition) {
         String lsReturn = "";
-        String lsTagset = "{\"tagsetJsonContent\": \"" + tsTagsetDefinition.replaceAll("\"", "\\\\\"").replaceAll("\r", "").replaceAll("\n", "") + "\"}";
-        
+        String lsTagset = "{\"tagsetJsonContent\": \""
+                + tsTagsetDefinition.replaceAll("\"", "\\\\\"").replaceAll("\r", "").replaceAll("\n", "") + "\"}";
+
         // Ajouter un groupe pertinent
-        lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Tagsets/tagset", lsTagset,
-                USERTYPE.CustomUser);
+        lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Tagsets/tagset", lsTagset, USERTYPE.CustomUser);
 
         if (lsReturn != null && new JSONObject(lsReturn).has("id")) {
             JSONObject loJson = new JSONObject(lsReturn);
@@ -812,27 +842,28 @@ public class Corpus {
 
     /**
      * Return the id and name of each annotation group of a corpus
+     * 
      * @param tsCorpusId
      * @return
      */
     public Map<String, String> getGroups(String tsCorpusId) {
         String lsReturn = null;
         Map<String, String> loGroups = new HashMap<String, String>();
-        
+
         // Get structure
         lsReturn = poCfg.getRequest(poCfg.getPacteBackend() + "RACSProxy/corpora/" + tsCorpusId + "/structure",
                 USERTYPE.CustomUser, null);
-        
+
         // parse json
-        JSONArray loGrps = new JSONObject(lsReturn).getJSONArray("buckets"); 
+        JSONArray loGrps = new JSONObject(lsReturn).getJSONArray("buckets");
         for (int lniCpt = 0; lniCpt < loGrps.length(); lniCpt++) {
             JSONObject loObj = loGrps.getJSONObject(lniCpt);
             loGroups.put(loObj.getString("id"), loObj.getString("name"));
         }
-        
+
         return loGroups;
     }
-    
+
     public String getAnnotations(String tsCorpusId, String tsDocId, String tsSchemaTypes) {
         String lsReturn = "";
         List<NameValuePair> lasParam = new ArrayList<NameValuePair>();
