@@ -105,12 +105,12 @@ public class NERService implements iServices {
 
 		lsResponse = poConfig.getRequest(poConfig.getServiceUrl() + SERVICENAME + "/status?uuid=" + tsUUID,
 				USERTYPE.CustomUser, null);
-		
+
 		return lsResponse;
 	}
-	
+
 	@Override
 	public String checkStatus() {
-		return checkStatus( psLastUUID);
+		return checkStatus(psLastUUID);
 	}
 }

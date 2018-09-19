@@ -6,10 +6,19 @@ import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
 
+import ca.crim.nlp.pacte.QuickConfig.SCHEMA_TARGET;
 import ca.crim.nlp.pacte.QuickConfig.USERTYPE;
 
 public class QuickConfigTest {
 
+	@Test
+	public void testTargetSchema() {
+		QuickConfig loCfg = new QuickConfig();
+		assertNotNull(loCfg.getTargetSchema(SCHEMA_TARGET.CORPUS));	
+		assertNotNull(loCfg.getTargetSchema(SCHEMA_TARGET.DOCUMENT));	
+		assertNotNull(loCfg.getTargetSchema(SCHEMA_TARGET.DOCUMENT_SURFACE1D));	
+	}
+	
 	@Test
 	public void testEmptyURL() {
 		QuickConfig loCfg = null;
@@ -47,7 +56,7 @@ public class QuickConfigTest {
 	public void testCredentials() {
 		QuickConfig loCfg = null;
 
-		loCfg = new QuickConfig("https://", "1", "2", "3", "4", "5", "6", false, 1);
+		loCfg = new QuickConfig("https://", "1", "2", "3", "4", "5", "6", false, 1, null);
 
 		assertNotNull(loCfg.poCred.get(USERTYPE.CustomUser));
 		assertNotNull(loCfg.poCred.get(USERTYPE.PacteAdmin));

@@ -292,7 +292,7 @@ public class Corpus {
 
         // Add the header
         lsFile.append("DocumentId\t");
-        for (String lsFeature : loSchema.FeatureList)
+        for (String lsFeature : loSchema.FeatureList.keySet())
             lsFile.append(lsFeature + "\t");
         lsFile.append((tbIncludeSourceText ? "source text" : "") + System.lineSeparator());
 
@@ -323,7 +323,7 @@ public class Corpus {
 
                     // Add all features
                     lsLine.append(loAnnot.getString("_documentID") + "\t");
-                    for (String lsFeature : loSchema.FeatureList) {
+                    for (String lsFeature : loSchema.FeatureList.keySet()) {
                         if (loAnnot.has(lsFeature))
                             lsLine.append(loAnnot.getString(lsFeature));
                         lsLine.append("\t");

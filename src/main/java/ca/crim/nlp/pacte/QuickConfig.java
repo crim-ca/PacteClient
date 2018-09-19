@@ -37,6 +37,10 @@ public class QuickConfig {
 		PSCAdmin, PacteAdmin, CustomUser
 	};
 
+	public enum SCHEMA_TARGET {
+		CORPUS, DOCUMENT, DOCUMENT_SURFACE1D
+	};
+
 	Map<USERTYPE, Credential> poCred = new HashMap<USERTYPE, Credential>();
 
 	// Creating an instance of HttpClient.
@@ -54,7 +58,7 @@ public class QuickConfig {
 		psBaseURLAuthen = tsBasePacteUrl.endsWith("/") ? tsBasePacteUrl : tsBasePacteUrl + "/";
 		psBaseURLPacteBE = psBaseURLAuthen + "pacte-backend/";
 		psBaseURLPSCUser = psBaseURLAuthen + "psc-users-permissions-management/";
-		psBaseURLService = tsServiceUrl.endsWith("/") ? tsServiceUrl: tsServiceUrl + "/";
+		psBaseURLService = tsServiceUrl.endsWith("/") ? tsServiceUrl : tsServiceUrl + "/";
 		pniTokenRenewDelay = tniTokenRenewDelay;
 		pbVerbose = tbVerbose;
 
@@ -115,9 +119,9 @@ public class QuickConfig {
 			throw new IllegalArgumentException("Username should not be null");
 
 		String[] lasConfig = readConfiguration();
-		
-		setConfig(tsBasePacteUrl, null, null, null, null, tsCustomUser, tsCustomPassword, tbVerbose,
-				tniTokenRenewDelay, lasConfig[9]);
+
+		setConfig(tsBasePacteUrl, null, null, null, null, tsCustomUser, tsCustomPassword, tbVerbose, tniTokenRenewDelay,
+				lasConfig[9]);
 	}
 
 	public void setCustomUser(String tsUsername, String tsPassword) {
@@ -141,14 +145,14 @@ public class QuickConfig {
 		psBaseURLAuthen = tsUrl.endsWith("/") ? tsUrl : tsUrl + "/";
 	}
 
-	public void setServiceUrl( String tsServiceUrl) {
-		psBaseURLService = tsServiceUrl.endsWith("/") ? tsServiceUrl: tsServiceUrl + "/";
+	public void setServiceUrl(String tsServiceUrl) {
+		psBaseURLService = tsServiceUrl.endsWith("/") ? tsServiceUrl : tsServiceUrl + "/";
 	}
-	
+
 	public String getServiceUrl() {
 		return psBaseURLService;
 	}
-	
+
 	public String getAuthenUrl() {
 		return psBaseURLAuthen;
 	}
@@ -349,6 +353,24 @@ public class QuickConfig {
 
 	public boolean getVerbose() {
 		return pbVerbose;
+	}
+
+	public String getTargetSchema(SCHEMA_TARGET toTarget) {
+		String lsLine = null;
+		StringBuilder loContent = new StringBuilder();
+		
+		try {
+			InputStream in = getClass().getResourceAsStream("/ca/crim/nlp/pacte/" + toTarget.name() + ".json");
+			BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+
+			while ((lsLine = reader.readLine()) != null)
+				loContent.append(lsLine);
+			
+		} catch (IOException e) {
+			return null;
+		}
+
+		return loContent.toString();
 	}
 
 	/**
