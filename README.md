@@ -21,7 +21,7 @@ corpus.createCorpus("Nouveau corpus", "fr_fr,en_en");
 
 ## Contributeurs et remerciements
 
-Ce client été produit par l’équipe [Parole et Texte](http://crim.ca/fr/equipes/parole-et-texte) du CRIM dans le cadre du projet [PACTE](http://pacte.crim.ca). Le projet a bénéficié du soutien financier de CANARIE et du ministère de l’Économie, de la Science et de l’Innovation (MESI) du gouvernement du Québec. 
+Ce client été produit par l’équipe [Parole et Texte](https://www.crim.ca/fr/equipes/parole-et-texte) du CRIM dans le cadre du projet [PACTE](http://pacte.crim.ca). Le projet a bénéficié du soutien financier de CANARIE et du ministère de l’Économie, de la Science et de l’Innovation (MESI) du gouvernement du Québec. 
 
 ## Références
 Si vous utilisez la plateforme PACTE pour vos recherches, prière d'utiliser la référence suivante : 
@@ -51,7 +51,7 @@ corpus.createCorpus("New corpus", "fr_fr,en_en");
 
 ## Credits and acknowledgements
 
-This client has been produced by the [Speech and Text](http://crim.ca/en/teams/speech-and-text) team at CRIM as part of the [Pacte](http://pacte.crim.ca) project. The project was supported by CANARIE and the *ministère de l’Économie, de la Science et de l’Innovation* (MESI) of the Government of Québec.
+This client has been produced by the [Speech and Text](https://www.crim.ca/en/teams/speech-and-text) team at CRIM as part of the [Pacte](http://pacte.crim.ca) project. The project was supported by CANARIE and the *ministère de l’Économie, de la Science et de l’Innovation* (MESI) of the Government of Québec.
 
 ## References
 If you use the PACTE platform for your research, kindly use the following reference:
