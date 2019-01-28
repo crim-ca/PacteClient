@@ -50,5 +50,11 @@ Java client facilitating access to CRIM Pacte's REST api.
   		<artifactId>junit</artifactId>
   		<version>4.12</version>
   	</dependency>
+  	<dependency>
+  <groupId>com.google.guava</groupId>
+  <artifactId>guava</artifactId>
+  <version>26.0-jre</version>
+</dependency>
+
   </dependencies>
 </project>

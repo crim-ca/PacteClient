@@ -105,7 +105,7 @@ public class Corpus {
 
                 String lsSchemaId = getSchemaId(new JSONObject(lsSchema).getString("schemaType"), "", "");
                 if (lsSchemaId == null)
-                    lsSchemaId = registerSchema(lsSchema);
+                    lsSchemaId = registerSchema(new SchemaData(lsSchema));
                 copySchemaToGroup(lsSchemaId, lsCorpusNewId, lsGroupId);
             }
         }
@@ -589,11 +589,11 @@ public class Corpus {
         return false;
     }
 
-    public String registerSchema(String tsSchema) {
+    public String registerSchema(SchemaData toSchema) {
         String lsReturn = "";
 
         lsReturn = poCfg.postRequest(poCfg.getPacteBackend() + "Schemas/schema",
-                "{\"schemaJsonContent\": \"" + tsSchema.replace("\"", "\\\"") + "\"}", USERTYPE.CustomUser);
+                "{\"schemaJsonContent\": \"" + toSchema.toString().replace("\"", "\\\"") + "\"}", USERTYPE.CustomUser);
 
         if (lsReturn.contains("{\"id\":\"")) {
             JSONObject loJson = new JSONObject(lsReturn);

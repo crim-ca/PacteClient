@@ -17,7 +17,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
 
 import ca.crim.nlp.pacte.QuickConfig;
-import ca.crim.nlp.pacte.client.SchemaFactory;
 import ca.crim.nlp.pacte.client.Corpus;
 import ca.crim.nlp.pacte.client.FeatureDefinition;
 import ca.crim.nlp.pacte.client.SchemaData;
@@ -25,11 +24,12 @@ import ca.crim.nlp.pacte.client.SchemaData;
 public class Transcriber implements ITranscoder {
 
 	// TODO: add hook function for CustomParamter generator
-	
+
 	@Override
 	/**
 	 * Trans/topics/speakers tags are document-level annotations/schemas, the rest
-	 * are surface-level. Corpus and group should already exist in Pacte.
+	 * are surface-level. The target corpus and annotation group should already
+	 * exist in Pacte.
 	 */
 	public boolean importToPacte(QuickConfig toConfig, List<File> toaFiles, String tsCorpusId, String tsGroupId,
 			Map<String, String> toCustomParamaters) {
@@ -42,11 +42,13 @@ public class Transcriber implements ITranscoder {
 			TrsData loData = readTrsFile(loFile, "|-", "-|");
 
 			// Encode the schemas and data
-			List<String> lasSchemas = generateSchemas();
-			for (String lsSchema : lasSchemas) {
+			List<SchemaData> lasSchemas = generateSchemas();
+			for (SchemaData loSchema : lasSchemas) {
 				// TODO: check is schemas exist in the corpus+group, if not, register it
 				Corpus loCorp = new Corpus(toConfig);
-				loCorp.getSchemaId(new SchemaData(lsSchema).SchemaType, tsCorpusId, tsGroupId);
+				String lsSchemaId = loCorp.getSchemaId(loSchema.SchemaType, tsCorpusId, tsGroupId);
+				if (lsSchemaId == null)
+					loCorp.registerSchema(loSchema);
 			}
 
 			// Upload the data and schema
@@ -57,60 +59,62 @@ public class Transcriber implements ITranscoder {
 
 	/**
 	 * Create the basic Transcriber annotation schemas
+	 * 
 	 * @return
 	 */
-	private List<String> generateSchemas() {
-		List<String> loSchemas = new ArrayList<String>();
-		
+	private List<SchemaData> generateSchemas() {
+		List<SchemaData> loSchemas = new ArrayList<SchemaData>();
+
 		// Topics
 		// <Topic id="to1" desc="QP1"/>
 		List<FeatureDefinition> loOpts = new ArrayList<FeatureDefinition>();
-		loOpts.add( new FeatureDefinition("id", "String", "Topic identifier", "", false, null, true));
-		loOpts.add( new FeatureDefinition("description", "String", "Topic description", "", false, null, false));
-		loSchemas.add( SchemaFactory.generateDocumentSchema("Topic", "Topic", loOpts));
-		
+		loOpts.add(new FeatureDefinition("id", "String", "Topic identifier", "", false, null, true));
+		loOpts.add(new FeatureDefinition("description", "String", "Topic description", "", false, null, false));
+		loSchemas.add(new SchemaData(SchemaData.TARGET.document, "Topic", loOpts));
+
 		// SPEAKERS
 		// <Speaker id="spk1" name="RC" check="no" dialect="native" accent=""
 		// scope="local"/>
 		loOpts = new ArrayList<FeatureDefinition>();
-		loOpts.add( new FeatureDefinition("id", "String", "Speaker identifier", "", false, null, true));
-		loOpts.add( new FeatureDefinition("name", "String", "Speaker's name", "", false, null, false));
-		loOpts.add( new FeatureDefinition("check", "String", "?", "", false, null, false));
-		loOpts.add( new FeatureDefinition("dialect", "String", "Speaker's name", "", false, null, false));
-		loOpts.add( new FeatureDefinition("accent", "String", "Speaker's name", "", false, null, false));
-		loOpts.add( new FeatureDefinition("scope", "String", "Speaker's name", "", false, null, false));
-		loSchemas.add(SchemaFactory.generateDocumentSchema("Speaker", "Speaker", loOpts));
-	
+		loOpts.add(new FeatureDefinition("id", "String", "Speaker identifier", "", false, null, true));
+		loOpts.add(new FeatureDefinition("name", "String", "Speaker's name", "", false, null, false));
+		loOpts.add(new FeatureDefinition("check", "String", "?", "", false, null, false));
+		loOpts.add(new FeatureDefinition("dialect", "String", "Speaker's name", "", false, null, false));
+		loOpts.add(new FeatureDefinition("accent", "String", "Speaker's name", "", false, null, false));
+		loOpts.add(new FeatureDefinition("scope", "String", "Speaker's name", "", false, null, false));
+		loSchemas.add(new SchemaData(SchemaData.TARGET.document, "Speaker", loOpts));
+
 		// <Section type="report" startTime="0" endTime="13.942" topic="to1">
 		loOpts = new ArrayList<FeatureDefinition>();
-		loOpts.add( new FeatureDefinition("type", "String", "Section type", "", false, null, true));
-		loOpts.add( new FeatureDefinition("startTime", "String", "Start time of the section", "", false, null, true));
-		loOpts.add( new FeatureDefinition("endTime", "String", "End time of the section", "", false, null, true));
-		loOpts.add( new FeatureDefinition("topic", "String", "Topic reference", "", false, null, false));
-		loSchemas.add(SchemaFactory.generateSurfaceSchema("Section", "Section", loOpts));
-		
+		loOpts.add(new FeatureDefinition("type", "String", "Section type", "", false, null, true));
+		loOpts.add(new FeatureDefinition("startTime", "String", "Start time of the section", "", false, null, true));
+		loOpts.add(new FeatureDefinition("endTime", "String", "End time of the section", "", false, null, true));
+		loOpts.add(new FeatureDefinition("topic", "String", "Topic reference", "", false, null, false));
+		loSchemas.add(new SchemaData(SchemaData.TARGET.document, "Section", loOpts));
+
 		// <Turn speaker="spk1" startTime="3906.731" endTime="3916.829">
 		loOpts = new ArrayList<FeatureDefinition>();
-		loOpts.add( new FeatureDefinition("speaker", "String", "Speaker identifier for this turn", "", false, null, true));
-		loOpts.add( new FeatureDefinition("startTime", "String", "Start time of the turn", "", false, null, true));
-		loOpts.add( new FeatureDefinition("endTime", "String", "End time of the turn", "", false, null, true));
-		loSchemas.add(SchemaFactory.generateSurfaceSchema("Turn", "Turn", loOpts));
-		
+		loOpts.add(
+				new FeatureDefinition("speaker", "String", "Speaker identifier for this turn", "", false, null, true));
+		loOpts.add(new FeatureDefinition("startTime", "String", "Start time of the turn", "", false, null, true));
+		loOpts.add(new FeatureDefinition("endTime", "String", "End time of the turn", "", false, null, true));
+		loSchemas.add(new SchemaData(SchemaData.TARGET.document, "Turn", loOpts));
+
 		// <Sync time="3910.332"/>
 		loOpts = new ArrayList<FeatureDefinition>();
-		loOpts.add( new FeatureDefinition("time", "String", "Time of this entry", "", false, null, true));
-		loSchemas.add(SchemaFactory.generateSurfaceSchema("Sync", "Sync", loOpts));
-		
+		loOpts.add(new FeatureDefinition("time", "String", "Time of this entry", "", false, null, true));
+		loSchemas.add(new SchemaData(SchemaData.TARGET.document, "Sync", loOpts));
+
 		// <Event desc="pi" type="pronounce" extent="instantaneous"/>
 		loOpts = new ArrayList<FeatureDefinition>();
-		loOpts.add( new FeatureDefinition("desc", "String", "Event description", "", false, null, false));
-		loOpts.add( new FeatureDefinition("type", "String", "Type of event", "", false, null, false));
-		loOpts.add( new FeatureDefinition("extent", "String", "?", "", false, null, false));
-		loSchemas.add(SchemaFactory.generateSurfaceSchema("Event", "Event", loOpts));
-		
+		loOpts.add(new FeatureDefinition("desc", "String", "Event description", "", false, null, false));
+		loOpts.add(new FeatureDefinition("type", "String", "Type of event", "", false, null, false));
+		loOpts.add(new FeatureDefinition("extent", "String", "?", "", false, null, false));
+		loSchemas.add(new SchemaData(SchemaData.TARGET.document, "Event", loOpts));
+
 		return loSchemas;
 	}
-	
+
 	private TrsData readTrsFile(File toFile, String tsCustomBeginSep, String tsCustomEndSep) {
 		TrsData loData = new TrsData();
 		StringBuilder loContent = new StringBuilder();

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Trans scribe="scriber" audio_filename="filename1" version="007" version_date="180727">
+<Topics>
+<Topic id="to1" desc="QP1"/>
+<Topic id="to2" desc="QP2"/>
+<Topic id="to3" desc="QP3"/>
+</Topics>
+<Speakers>
+<Speaker id="spk1" name="s1" check="no" dialect="native" accent="" scope="local"/>
+<Speaker id="spk2" name="s2" check="no" dialect="native" accent="" scope="local"/>
+<Speaker id="spk4" name="s3" check="no" dialect="native" accent="" scope="local"/>
+</Speakers>
+<Episode>
+<Section type="report" startTime="0" endTime="13.942" topic="to1">
+<Turn startTime="0" endTime="7.994" speaker="s1">
+<Sync time="0"/>
+
+<Sync time="2.17"/>
+bonjour madame
+<Sync time="2.719"/>
+
+<Sync time="4.293"/>
+comment allez-vous ?
+<Sync time="6.73"/>
+
+</Turn>
+<Turn speaker="s2" startTime="7.994" endTime="11.934">
+<Sync time="7.994"/>
+aucune idée |-ma -|
+<Sync time="11.19"/>
+
+</Turn>
+<Turn speaker="s4" startTime="11.934" endTime="12.459">
+<Sync time="11.934"/>
+moi aussi, merci de demander
+</Turn>
+</Section>
+
+<Section type="report" topic="to2" startTime="13.942" endTime="27.671">
+<Turn speaker="s1" startTime="13.942" endTime="16.618">
+<Sync time="13.942"/>
+et qu'est-ce qui vous a amenée à vivre dans le coin ?
+<Sync time="16.041"/>
+
+</Turn>
+<Turn speaker="s2" startTime="16.618" endTime="23.716">
+<Sync time="16.618"/>
+ma mère |-m emb="n.a." inf="n.a." sbj="mère.NOM" neg="n.a." lia="n.a." com="n.a."-|
+<Sync time="20.744"/>
+
+<Sync time="21.297"/>
+est arrivé hier |-e emb="est.r1r" lia="n.a." com="n.a." -|
+<Sync time="23.067"/>
+
+</Turn>
+<Turn speaker="s4" startTime="23.716" endTime="23.983">
+<Sync time="23.716"/>
+ha bon
+</Turn>
+</Section>
+</Episode>
+</Trans>

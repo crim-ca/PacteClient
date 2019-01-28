@@ -73,8 +73,9 @@ public class SampleBuilder {
             }
 
             String lsSchemaId = toCorpus.getSchemaId(new JSONObject(lsTrancodeSchema).getString("schemaType"), "", "");
-            if (lsSchemaId == null)
-                lsSchemaId = toCorpus.registerSchema(lsTrancodeSchema);
+            if (lsSchemaId == null) {
+                lsSchemaId = toCorpus.registerSchema(new SchemaData(lsTrancodeSchema));
+            }
             toCorpus.copySchemaToGroup(lsSchemaId, lsCorpusId, lsTranscodeGroup);
 
             // Documents and their metadata
