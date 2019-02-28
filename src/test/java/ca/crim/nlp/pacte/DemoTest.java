@@ -4,11 +4,14 @@ import static org.junit.Assert.assertNotNull;
 
 import org.junit.Test;
 
+import org.junit.Ignore;
+
 import ca.crim.nlp.pacte.client.Admin;
 
 public class DemoTest {
 
     @Test
+    @Ignore
     public void runDemo() {
         QuickConfig loCfg = new QuickConfig();
         Admin loAdmin = new Admin(loCfg);
